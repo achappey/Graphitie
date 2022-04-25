@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
@@ -24,9 +23,12 @@ public class SecureScoresController : ControllerBase
     }
 
     [HttpGet(Name = "GetSecureScores")]
+    [Produces(typeof(IEnumerable<SecureScore>))]
     [EnableQuery]
-    public async Task<IEnumerable<SecureScore>> Get()
+    public async Task<IActionResult> Get()
     {
-        return await _graphitieService.GetSecureScores();
+        var result = await _graphitieService.GetSecureScores();
+
+        return Ok(result);
     }
 }
