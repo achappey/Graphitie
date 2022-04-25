@@ -17,7 +17,7 @@ public static class CoreExtensions
         return id;
     }
 
-     public static string GetUserPrincipalName(this HttpContext context)
+    public static string GetUserPrincipalName(this HttpContext context)
     {
         var id = context.User.Identity?.Name;
 

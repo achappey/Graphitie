@@ -7,7 +7,8 @@ using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
-
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 using Graphitie.Services;
 using Graphitie.Connectors.WakaTime;
 using Graphitie.Connectors.Duolingo;
@@ -40,6 +41,8 @@ builder.Services.AddAutoMapper(
           typeof(Graphitie.Profiles.WakaTime.WakaTimeProfile),
           typeof(Graphitie.Profiles.GitHub.GitHubProfile)
       );
+
+builder.Services.AddScoped<IClaimsTransformation, AddRolesClaimsTransformation>();
 
 builder.Services.AddScoped<GraphitieService>();
 builder.Services.AddSingleton<DuolingoService>();
@@ -110,4 +113,38 @@ static IEdmModel GetMicrosoftGraphModel(string name)
     builder.Namespace = name;
 
     return builder.GetEdmModel();
+}
+
+
+
+
+public class AddRolesClaimsTransformation : IClaimsTransformation {
+    private readonly ILogger<AddRolesClaimsTransformation> _logger;
+
+    public AddRolesClaimsTransformation(ILogger<AddRolesClaimsTransformation> logger) {
+        _logger = logger;
+    }
+
+    public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal) {
+        var mappedRolesClaims = principal.Claims
+            .Where(claim => claim.Type == "roles")
+            .Select(claim => new Claim(ClaimTypes.Role, claim.Value))
+            .ToList();
+
+        // Clone current identity
+        var clone = principal.Clone();
+
+        if (clone.Identity is not ClaimsIdentity newIdentity) return Task.FromResult(principal);
+
+        // Add role claims to cloned identity
+        foreach (var mappedRoleClaim in mappedRolesClaims)
+            newIdentity.AddClaim(mappedRoleClaim);
+
+        if (mappedRolesClaims.Count > 0)
+            _logger.LogInformation("Added roles claims {mappedRolesClaims}", mappedRolesClaims);
+        else
+            _logger.LogInformation("No roles claims added");
+
+        return Task.FromResult(clone);
+    }
 }
