@@ -13,6 +13,7 @@ public interface IMicrosoftService
     public Task<IEnumerable<Device>> GetDevices();
     public Task<IEnumerable<SignIn>> GetSignIns();
     public Task<IEnumerable<SignIn>> GetSignInsByUser(string userId);
+    public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
     public Task<IEnumerable<Employee>> GetEmployees();
     public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
     public Task<IEnumerable<Graphitie.Models.SecureScore>> GetSecureScores();
@@ -35,19 +36,9 @@ public class MicrosoftService : IMicrosoftService
 
     public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)
     {
-        var items = await this._graphServiceClient.Devices
-       .Request()
-       .Top(100)
-       .Expand("registeredOwners")
-       .GetAsync();
+        var items = await this.GetDevices();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.Device>(items, 100);
-
-        var managedDevices = await GetManagedDevices();
-
-        return allItems
-            .Select(t => this._mapper.Map<Graphitie.Models.Device>(t)
-                .WithManagedDevice(managedDevices.FirstOrDefault(u => u.AzureADDeviceId == t.DeviceId)));
+        return items.Where(t => t.RegisteredOwner == userId);
     }
 
     public async Task<IEnumerable<User>> GetMembers()
@@ -140,6 +131,18 @@ public class MicrosoftService : IMicrosoftService
         return allItems;
     }
 
+    public async Task<IEnumerable<DevicePerformance>> GetDevicePerformance()
+    {
+        var iterator = await this._graphServiceClient.DeviceManagement.UserExperienceAnalyticsDevicePerformance.Request()
+        .Top(100)
+        .GetAsync();
+
+        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsDevicePerformance>(iterator);
+
+        return allItems.Select(t => this._mapper.Map<Graphitie.Models.DevicePerformance>(t));
+    }
+
+
     public async Task<IEnumerable<Microsoft.Graph.UserExperienceAnalyticsAppHealthOSVersionPerformance>> GetAppHealthOSVersionPerformance()
     {
         var iterator = await this._graphServiceClient.DeviceManagement.UserExperienceAnalyticsAppHealthOSVersionPerformance.Request()
@@ -211,7 +214,7 @@ public class MicrosoftService : IMicrosoftService
     public async Task<IEnumerable<SignIn>> GetSignIns()
     {
         var iterator = await this._graphServiceClient.AuditLogs.SignIns.Request()
-        .Filter(string.Format("createdDateTime ge {0}", DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-ddTHH:mm:ssZ")))
+        .Filter(string.Format("createdDateTime ge {0}", DateTime.UtcNow.AddDays(-4).ToString("yyyy-MM-ddTHH:mm:ssZ")))
         .Top(999)
         .GetAsync();
 
@@ -220,5 +223,5 @@ public class MicrosoftService : IMicrosoftService
         return allItems.Select(t => this._mapper.Map<SignIn>(t));
     }
 
-  
+
 }

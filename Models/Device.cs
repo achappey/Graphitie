@@ -15,6 +15,7 @@ public class Device
     public string? DisplayName { get; set; }
     public bool AccountEnabled { get; set; }
     public DateTimeOffset RegistrationDateTime { get; set; }
+    public DateTimeOffset? ApproximateLastSignInDateTime { get; set; }
     public string? RegisteredOwner { get; set; }
     public string? Imei { get; set; }
     public string? SerialNumber { get; set; }

@@ -3,7 +3,6 @@ namespace Graphitie.Models;
 public class User
 {
 
-    public IEnumerable<Language> Languages { get; set; } = null!;
     public string Id { get; set; } = null!;
     public string? DisplayName { get; set; }
     public string? JobTitle { get; set; }
@@ -13,7 +12,9 @@ public class User
     public string? UserPrincipalName { get; set; }
     public string? EmployeeId { get; set; }
     public string? CompanyName { get; set; }
-    public DateTimeOffset? CreatedDateTime { get; set; }
+    public string? UserType { get; set; }
     public bool AccountEnabled { get; set; }
+    public DateTimeOffset? CreatedDateTime { get; set; }
+    public IEnumerable<Language> Languages { get; set; } = null!;
 
 }

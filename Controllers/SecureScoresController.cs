@@ -9,6 +9,7 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
+[ApiExplorerSettings(IgnoreApi = true)]
 [Authorize(Roles = ("Administrators,Users"))]
 public class SecureScoresController : ControllerBase
 {
@@ -25,10 +26,8 @@ public class SecureScoresController : ControllerBase
     [HttpGet(Name = "GetSecureScores")]
     [Produces(typeof(IEnumerable<SecureScore>))]
     [EnableQuery]
-    public async Task<IActionResult> Get()
+    public async Task<IEnumerable<SecureScore>> Get()
     {
-        var result = await _graphitieService.GetSecureScores();
-
-        return Ok(result);
+        return await _graphitieService.GetSecureScores();
     }
 }

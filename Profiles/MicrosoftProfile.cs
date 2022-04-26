@@ -13,6 +13,11 @@ public class MicrosoftProfile : AutoMapper.Profile
         
         CreateMap<SignIn, Graphitie.Models.SignIn>();
         CreateMap<SignInLocation, Graphitie.Models.SignInLocation>();
+        CreateMap<SignInStatus, Graphitie.Models.SignInStatus>();
+
+        CreateMap<UserExperienceAnalyticsDevicePerformance, Graphitie.Models.DevicePerformance>();
+//        CreateMap<UserExperienceAnalyticsDeviceStartupProcess, Graphitie.Models.DeviceStartupProcess>();
+ //       CreateMap<UserExperienceAnalyticsDeviceStartupHistory, Graphitie.Models.DeviceStartup>();
 
         CreateMap<Device, Graphitie.Models.Device>()
         .ForMember(t => t.RegisteredOwner, f => f.MapFrom(g => g.RegisteredOwners.Select(z => z.Id).FirstOrDefault()));

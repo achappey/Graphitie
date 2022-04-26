@@ -21,12 +21,13 @@ var version = "v1";
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 var appConfig = builder.Configuration.Get<AppConfig>();
+var apiTitle = appConfig.NameSpace.Replace(".", " ");
 
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc(version, new OpenApiInfo { Title = appConfig.NameSpace.Replace(".", " "), Version = "v1", });
+    c.SwaggerDoc(version, new OpenApiInfo { Title = apiTitle, Version = version, });
 
     c.DocInclusionPredicate((docName, apiDesc) =>
     {
@@ -87,7 +88,7 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint(
         string.Format("/swagger/{0}/swagger.json", version),
-        string.Format("{0} {1}", appConfig.NameSpace.Replace(".", " "), version));
+        string.Format("{0} {1}", apiTitle, version));
 });
 
 app.UseHttpsRedirection();
@@ -118,14 +119,17 @@ static IEdmModel GetMicrosoftGraphModel(string name)
 
 
 
-public class AddRolesClaimsTransformation : IClaimsTransformation {
+public class AddRolesClaimsTransformation : IClaimsTransformation
+{
     private readonly ILogger<AddRolesClaimsTransformation> _logger;
 
-    public AddRolesClaimsTransformation(ILogger<AddRolesClaimsTransformation> logger) {
+    public AddRolesClaimsTransformation(ILogger<AddRolesClaimsTransformation> logger)
+    {
         _logger = logger;
     }
 
-    public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal) {
+    public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+    {
         var mappedRolesClaims = principal.Claims
             .Where(claim => claim.Type == "roles")
             .Select(claim => new Claim(ClaimTypes.Role, claim.Value))

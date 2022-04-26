@@ -13,6 +13,7 @@ public interface IGraphitieService
     public Task<IEnumerable<Language>> GetLanguages();
     public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
     public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userId);
+    public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
 
 }
 
@@ -65,6 +66,11 @@ public class GraphitieService : IGraphitieService
         return await this._microsoftService.GetEmployees();
     }
 
+    public async Task<IEnumerable<DevicePerformance>> GetDevicePerformance()
+    {
+        return await this._microsoftService.GetDevicePerformance();
+    }
+
     public async Task<IEnumerable<Device>> GetDevices()
     {
         return await this._microsoftService.GetDevices();
@@ -73,7 +79,7 @@ public class GraphitieService : IGraphitieService
     public async Task<IEnumerable<Graphitie.Models.SecureScore>> GetSecureScores()
     {
         return await this._microsoftService.GetSecureScores();
-    }     
+    }
 
     public async Task<IEnumerable<SecurityAlert>> GetSecurityAlerts()
     {

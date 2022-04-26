@@ -1,0 +1,33 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
+
+using Graphitie.Models;
+using Graphitie.Services;
+
+namespace Graphitie.Controllers.Microsoft;
+
+[ApiController]
+[Route("[controller]")]
+[ApiExplorerSettings(IgnoreApi = true)]
+[Authorize(Roles = ("Administrators"))]
+public class DevicePerformanceController : ControllerBase
+{
+    private readonly ILogger<DevicePerformanceController> _logger;
+
+    private readonly GraphitieService _graphitieService;
+
+    public DevicePerformanceController(ILogger<DevicePerformanceController> logger, GraphitieService graphitieService)
+    {
+        _logger = logger;
+        _graphitieService = graphitieService;
+    }
+
+    [HttpGet(Name = "GetDevicePerformance")]
+    [EnableQuery]
+    public async Task<IEnumerable<DevicePerformance>> Get()
+    {
+        return await _graphitieService.GetDevicePerformance();
+    }
+
+}
