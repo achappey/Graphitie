@@ -27,7 +27,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc(version, new OpenApiInfo { Title = apiTitle, Version = version, });
+    c.SwaggerDoc(version, new OpenApiInfo { Title = apiTitle, Version = version });
 
     c.DocInclusionPredicate((docName, apiDesc) =>
     {
@@ -66,7 +66,7 @@ builder.Services.AddAzureClients(b =>
 
 
 builder.Services.AddControllers()
-    .AddOData(opt => opt.AddRouteComponents(odataEndpoint, GetMicrosoftGraphModel(appConfig.NameSpace))
+    .AddOData(opt => opt.AddRouteComponents(odataEndpoint, GetGraphModel(appConfig.NameSpace))
             .Filter().Select().Expand().OrderBy().Count().SetMaxTop(999).SkipToken());
 
 var microsoft = builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
@@ -100,7 +100,7 @@ app.MapControllers();
 
 app.Run();
 
-static IEdmModel GetMicrosoftGraphModel(string name)
+static IEdmModel GetGraphModel(string name)
 {
     ODataConventionModelBuilder builder = new();
 

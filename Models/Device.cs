@@ -21,8 +21,9 @@ public class Device
     public string? SerialNumber { get; set; }
     public DateTimeOffset? LastSyncDateTime { get; set; }
     public bool? IsEncrypted { get; set; }
+    public bool? IsManaged { get; set; }    
+    public string? ManagedDeviceId { get; set; }
+    public string? DeviceOwnership { get; set; }
     public long? TotalStorageSpaceInBytes { get; set; }
     public long? FreeStorageSpaceInBytes { get; set; }
-
-
 }

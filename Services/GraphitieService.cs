@@ -1,5 +1,6 @@
 using AutoMapper;
 using Graphitie.Models;
+using Graphitie.Extensions;
 using Graphitie.Connectors.WakaTime;
 
 namespace Graphitie.Services;
@@ -46,68 +47,106 @@ public class GraphitieService : IGraphitieService
 
     public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)
     {
-        return await this._microsoftService.GetDevicesByUser(userId);
+        var items = await this._microsoftService.GetDevicesByUser(userId);
+
+        return await WithManagedDevices(items.Select(t => this._mapper.Map<Device>(t)));
     }
+    
+    public async Task<IEnumerable<Device>> GetDevices()
+    {
+        var items = await this._microsoftService.GetDevices();
+
+        return await WithManagedDevices(items.Select(t => this._mapper.Map<Device>(t)));
+    }
+
+    private async Task<IEnumerable<Device>> WithManagedDevices(IEnumerable<Device> devices)
+    {
+        var managedDevices = await this._microsoftService.GetManagedDevices();
+
+        return devices
+            .Select(t => t
+                .WithManagedDevice(managedDevices.FirstOrDefault(u => u.AzureADDeviceId == t.DeviceId)));
+
+    }
+
 
     public async Task<IEnumerable<User>> GetMembers()
     {
-        return await this._microsoftService.GetMembers();
+        var items = await this._microsoftService.GetMembers();
+
+        return items.Select(t => this._mapper.Map<User>(t));
     }
 
 
     public async Task<IEnumerable<User>> GetUsers()
     {
-        return await this._microsoftService.GetUsers();
+        var items = await this._microsoftService.GetUsers();
 
+        return items.Select(t => this._mapper.Map<User>(t));
     }
 
     public async Task<IEnumerable<Employee>> GetEmployees()
     {
-        return await this._microsoftService.GetEmployees();
+        var items = await this._microsoftService.GetMembers();
+
+        return items.Select(t => this._mapper.Map<Employee>(t));
     }
 
     public async Task<IEnumerable<DevicePerformance>> GetDevicePerformance()
     {
-        return await this._microsoftService.GetDevicePerformance();
+        var items = await this._microsoftService.GetDevicePerformance();
+
+        return items.Select(t => this._mapper.Map<DevicePerformance>(t));
     }
 
-    public async Task<IEnumerable<Device>> GetDevices()
-    {
-        return await this._microsoftService.GetDevices();
-    }
 
-    public async Task<IEnumerable<Graphitie.Models.SecureScore>> GetSecureScores()
+    public async Task<IEnumerable<SecureScore>> GetSecureScores()
     {
-        return await this._microsoftService.GetSecureScores();
+        var items = await this._microsoftService.GetSecureScores();
+
+        return items.Select(t => this._mapper.Map<SecureScore>(t));
     }
 
     public async Task<IEnumerable<SecurityAlert>> GetSecurityAlerts()
     {
-        return await this._microsoftService.GetSecurityAlerts();
+        var items = await this._microsoftService.GetSecurityAlerts();
+
+        return items.Select(t => this._mapper.Map<SecurityAlert>(t));
     }
     public async Task<IEnumerable<SecurityAlert>> GetSecurityAlertsByUser(string userPrincipalName)
     {
-        return await this._microsoftService.GetSecurityAlertsByUser(userPrincipalName);
+        var items = await this._microsoftService.GetSecurityAlertsByUser(userPrincipalName);
+
+        return items.Select(t => this._mapper.Map<SecurityAlert>(t));
     }
 
     public async Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails()
     {
-        return await this._microsoftService.GetUserRegistrationDetails();
+        var items = await this._microsoftService.GetUserRegistrationDetails();
+
+        return items.Select(t => this._mapper.Map<UserRegistrationDetails>(t));
     }
 
     public async Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userPrincipalName)
     {
-        return await this._microsoftService.GetUserRegistrationDetailsByUser(userPrincipalName);
+        var item = await this._microsoftService.GetUserRegistrationDetailsByUser(userPrincipalName);
+
+        return item != null ? this._mapper.Map<UserRegistrationDetails>(item) : null;
+
     }
 
     public async Task<IEnumerable<SignIn>> GetSignInsByUser(string userId)
     {
-        return await this._microsoftService.GetSignInsByUser(userId);
+        var items = await this._microsoftService.GetSignInsByUser(userId);
+
+        return items.Select(t => this._mapper.Map<SignIn>(t));
     }
 
     public async Task<IEnumerable<SignIn>> GetSignIns()
     {
-        return await this._microsoftService.GetSignIns();
+        var items = await this._microsoftService.GetSignIns();
+
+        return items.Select(t => this._mapper.Map<SignIn>(t));
     }
 
     public async Task<IEnumerable<Repository>> GetRepositories()

@@ -1,5 +1,4 @@
-using AutoMapper;
-using Graphitie.Models;
+using Microsoft.Graph;
 using Graphitie.Extensions;
 
 namespace Graphitie.Services;
@@ -8,15 +7,15 @@ public interface IMicrosoftService
 {
     public Task<IEnumerable<User>> GetUsers();
     public Task<IEnumerable<User>> GetMembers();
-    public Task<IEnumerable<SecurityAlert>> GetSecurityAlerts();
-    public Task<IEnumerable<SecurityAlert>> GetSecurityAlertsByUser(string userPrincipalName);
+    public Task<IEnumerable<Alert>> GetSecurityAlerts();
+    public Task<IEnumerable<Alert>> GetSecurityAlertsByUser(string userPrincipalName);
     public Task<IEnumerable<Device>> GetDevices();
+    public Task<IEnumerable<ManagedDevice>> GetManagedDevices();
     public Task<IEnumerable<SignIn>> GetSignIns();
     public Task<IEnumerable<SignIn>> GetSignInsByUser(string userId);
-    public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
-    public Task<IEnumerable<Employee>> GetEmployees();
+    public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
     public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
-    public Task<IEnumerable<Graphitie.Models.SecureScore>> GetSecureScores();
+    public Task<IEnumerable<SecureScore>> GetSecureScores();
     public Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails();
     public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userPrincipalName);
 
@@ -25,27 +24,22 @@ public interface IMicrosoftService
 public class MicrosoftService : IMicrosoftService
 {
     private readonly Microsoft.Graph.GraphServiceClient _graphServiceClient;
-    private readonly IMapper _mapper;
 
-    public MicrosoftService(Microsoft.Graph.GraphServiceClient graphServiceClient,
-    IMapper mapper)
+    public MicrosoftService(Microsoft.Graph.GraphServiceClient graphServiceClient)
     {
         _graphServiceClient = graphServiceClient;
-        _mapper = mapper;
     }
 
     public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)
     {
         var items = await this.GetDevices();
 
-        return items.Where(t => t.RegisteredOwner == userId);
+        return items.Where(t => t.RegisteredOwners.Any(t => t.Id == userId));
     }
 
     public async Task<IEnumerable<User>> GetMembers()
     {
-        var user = await this.GetEnabledMembers();
-
-        return user.Select(t => this._mapper.Map<User>(t));
+        return await this.GetEnabledMembers();
     }
 
     private async Task<IEnumerable<Microsoft.Graph.User>> GetEnabledMembers()
@@ -70,16 +64,7 @@ public class MicrosoftService : IMicrosoftService
 
     public async Task<IEnumerable<User>> GetUsers()
     {
-        var allItems = await this.GetGraphUsers();
-
-        return allItems.Select(t => this._mapper.Map<User>(t));
-    }
-
-    public async Task<IEnumerable<Employee>> GetEmployees()
-    {
-        var items = await this.GetEnabledMembers();
-
-        return items.Select(t => this._mapper.Map<Employee>(t));
+        return await this.GetGraphUsers();
     }
 
     public async Task<IEnumerable<Device>> GetDevices()
@@ -90,16 +75,10 @@ public class MicrosoftService : IMicrosoftService
        .Expand("registeredOwners")
        .GetAsync();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.Device>(items, 100);
-
-        var managedDevices = await GetManagedDevices();
-
-        return allItems
-            .Select(t => this._mapper.Map<Graphitie.Models.Device>(t)
-                .WithManagedDevice(managedDevices.FirstOrDefault(u => u.AzureADDeviceId == t.DeviceId)));
+        return await _graphServiceClient.PagedRequest<Microsoft.Graph.Device>(items, 100);
     }
 
-    private async Task<IEnumerable<Microsoft.Graph.ManagedDevice>> GetManagedDevices()
+    public async Task<IEnumerable<Microsoft.Graph.ManagedDevice>> GetManagedDevices()
     {
         var items = await this._graphServiceClient.DeviceManagement.ManagedDevices
        .Request()
@@ -109,15 +88,13 @@ public class MicrosoftService : IMicrosoftService
         return await _graphServiceClient.PagedRequest<Microsoft.Graph.ManagedDevice>(items, 200);
     }
 
-    public async Task<IEnumerable<Graphitie.Models.SecureScore>> GetSecureScores()
+    public async Task<IEnumerable<SecureScore>> GetSecureScores()
     {
         var iterator = await this._graphServiceClient.Security.SecureScores.Request()
         .Top(100)
         .GetAsync();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.SecureScore>(iterator);
-
-        return allItems.Select(t => this._mapper.Map<Graphitie.Models.SecureScore>(t));
+        return await _graphServiceClient.PagedRequest<Microsoft.Graph.SecureScore>(iterator);
     }
 
     public async Task<IEnumerable<Microsoft.Graph.UserExperienceAnalyticsBatteryHealthDevicePerformance>> GetModelScores()
@@ -131,15 +108,14 @@ public class MicrosoftService : IMicrosoftService
         return allItems;
     }
 
-    public async Task<IEnumerable<DevicePerformance>> GetDevicePerformance()
+    public async Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance()
     {
         var iterator = await this._graphServiceClient.DeviceManagement.UserExperienceAnalyticsDevicePerformance.Request()
         .Top(100)
         .GetAsync();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsDevicePerformance>(iterator);
+        return await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsDevicePerformance>(iterator);
 
-        return allItems.Select(t => this._mapper.Map<Graphitie.Models.DevicePerformance>(t));
     }
 
 
@@ -149,24 +125,20 @@ public class MicrosoftService : IMicrosoftService
         .Top(100)
         .GetAsync();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsAppHealthOSVersionPerformance>(iterator);
-
-        return allItems;
+        return await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsAppHealthOSVersionPerformance>(iterator);
     }
 
-    public async Task<IEnumerable<SecurityAlert>> GetSecurityAlerts()
+    public async Task<IEnumerable<Alert>> GetSecurityAlerts()
     {
         var items = await this._graphServiceClient.Security.Alerts
        .Request()
        .Top(100)
        .GetAsync();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.Alert>(items, 100);
-
-        return allItems.Select(t => this._mapper.Map<Graphitie.Models.SecurityAlert>(t));
+        return await _graphServiceClient.PagedRequest<Microsoft.Graph.Alert>(items, 100);
     }
 
-    public async Task<IEnumerable<SecurityAlert>> GetSecurityAlertsByUser(string userPrincipalName)
+    public async Task<IEnumerable<Alert>> GetSecurityAlertsByUser(string userPrincipalName)
     {
         var items = await this._graphServiceClient.Security.Alerts
        .Request()
@@ -176,8 +148,7 @@ public class MicrosoftService : IMicrosoftService
         var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.Alert>(items, 100);
 
         return allItems
-        .Where(t => t.UserStates.Any(y => y.UserPrincipalName == userPrincipalName))
-        .Select(t => this._mapper.Map<Graphitie.Models.SecurityAlert>(t));
+            .Where(t => t.UserStates.Any(y => y.UserPrincipalName == userPrincipalName));
     }
 
     public async Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userPrincipalName)
@@ -187,7 +158,7 @@ public class MicrosoftService : IMicrosoftService
         .Top(1)
         .GetAsync();
 
-        return iterator.Select(t => this._mapper.Map<UserRegistrationDetails>(t)).FirstOrDefault();
+        return iterator.FirstOrDefault();
     }
 
     public async Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails()
@@ -196,31 +167,25 @@ public class MicrosoftService : IMicrosoftService
         .Top(999)
         .GetAsync();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.UserRegistrationDetails>(iterator);
-
-        return allItems.Select(t => this._mapper.Map<UserRegistrationDetails>(t));
+        return await _graphServiceClient.PagedRequest<Microsoft.Graph.UserRegistrationDetails>(iterator);
     }
 
-    public async Task<IEnumerable<SignIn>> GetSignInsByUser(string userId)
+    public async Task<IEnumerable<Microsoft.Graph.SignIn>> GetSignInsByUser(string userId)
     {
-        var iterator = await this._graphServiceClient.AuditLogs.SignIns.Request()
+        return await this._graphServiceClient.AuditLogs.SignIns.Request()
         .Filter(string.Format("userId eq '{0}'", userId))
         .Top(999)
         .GetAsync();
-
-        return iterator.Select(t => this._mapper.Map<SignIn>(t));
     }
 
-    public async Task<IEnumerable<SignIn>> GetSignIns()
+    public async Task<IEnumerable<Microsoft.Graph.SignIn>> GetSignIns()
     {
         var iterator = await this._graphServiceClient.AuditLogs.SignIns.Request()
         .Filter(string.Format("createdDateTime ge {0}", DateTime.UtcNow.AddDays(-4).ToString("yyyy-MM-ddTHH:mm:ssZ")))
         .Top(999)
         .GetAsync();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.SignIn>(iterator, 999);
-
-        return allItems.Select(t => this._mapper.Map<SignIn>(t));
+        return await _graphServiceClient.PagedRequest<Microsoft.Graph.SignIn>(iterator, 999);
     }
 
 

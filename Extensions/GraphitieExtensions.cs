@@ -11,6 +11,7 @@ public static class GraphitieExtensions
         device.TotalStorageSpaceInBytes = managedDevice?.TotalStorageSpaceInBytes;
         device.LastSyncDateTime = managedDevice?.LastSyncDateTime;
         device.Imei = managedDevice?.Imei;
+        device.ManagedDeviceId = managedDevice?.Id;
         device.SerialNumber = managedDevice?.SerialNumber;
 
         return device;
