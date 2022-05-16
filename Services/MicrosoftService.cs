@@ -13,7 +13,7 @@ public interface IMicrosoftService
     public Task<IEnumerable<Device>> GetDevices();
     public Task<IEnumerable<ManagedDevice>> GetManagedDevices();
     public Task<IEnumerable<SignIn>> GetSignIns();
-    public Task SendEmail(string from, string to, string subject, string html);
+    public Task SendEmail(string user, string from, string to, string subject, string html);
     public Task<IEnumerable<SignIn>> GetSignInsByUser(string userId);
     public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
     public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();
@@ -83,13 +83,20 @@ public class MicrosoftService : IMicrosoftService
         return await this.GetGraphUsers();
     }
 
-    public async Task SendEmail(string from, string to, string subject, string html)
+    public async Task SendEmail(string user, string from, string to, string subject, string html)
     {
         var message = new Message()
         {
             Subject = subject,
+            From = new Recipient()
+            {
+                EmailAddress = new EmailAddress()
+                {
+                    Address = from
+                }
+            },
             ToRecipients = new List<Microsoft.Graph.Recipient>()
-         {
+            {
                 new Microsoft.Graph.Recipient
                 {
                     EmailAddress = new Microsoft.Graph.EmailAddress
@@ -105,7 +112,7 @@ public class MicrosoftService : IMicrosoftService
             }
         };
 
-        await this._graphServiceClient.Users[from]
+        await this._graphServiceClient.Users[user]
         .SendMail(message)
         .Request()
         .PostAsync();

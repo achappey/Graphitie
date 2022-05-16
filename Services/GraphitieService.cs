@@ -13,7 +13,7 @@ public interface IGraphitieService
     public Task<IEnumerable<Repository>> GetRepositories();
     public Task<IEnumerable<Language>> GetLanguages();
     public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
-    public Task SendEmail(string sender, string recipient, string subject, string html);
+    public Task SendEmail(string user, string sender, string recipient, string subject, string html);
     public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userId);
     public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
 
@@ -46,12 +46,9 @@ public class GraphitieService : IGraphitieService
         _gitHubClient = gitHubClient;
     }
 
-    public async Task SendEmail(string sender, string recipient, string subject, string html)
+    public async Task SendEmail(string user, string sender, string recipient, string subject, string html)
     {
-        var user = await this._microsoftService.GetUserByEmail(sender);
-
-        if (user != null)
-            await this._microsoftService.SendEmail(user.Id, recipient, subject, html);
+        await this._microsoftService.SendEmail(user, sender, recipient, subject, html);
     }
 
     public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)
