@@ -20,14 +20,9 @@ public class EmailController : ControllerBase
     }
 
     [HttpPost(Name = "SendEmail")]
-    public async Task SendEmail(string sender, string recipient, string subject)
+    public async Task SendEmail(string sender, string recipient, string subject, [FromBody] string email)
     {
-        using (var reader = new StreamReader(Request.Body))
-        {
-            var body = await reader.ReadToEndAsync();
-            
-            await _graphitieService.SendEmail(sender, recipient, subject, body);
-        }
+        await _graphitieService.SendEmail(sender, recipient, subject, email);
 
     }
 }
