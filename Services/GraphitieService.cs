@@ -13,6 +13,7 @@ public interface IGraphitieService
     public Task<IEnumerable<Repository>> GetRepositories();
     public Task<IEnumerable<Language>> GetLanguages();
     public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
+    public Task SendEmail(string sender, string recipient, string subject, string html);
     public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userId);
     public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
 
@@ -45,13 +46,21 @@ public class GraphitieService : IGraphitieService
         _gitHubClient = gitHubClient;
     }
 
+    public async Task SendEmail(string sender, string recipient, string subject, string html)
+    {
+        var user = await this._microsoftService.GetUserByEmail(sender);
+
+        if (user != null)
+            await this._microsoftService.SendEmail(user.Id, recipient, subject, html);
+    }
+
     public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)
     {
         var items = await this._microsoftService.GetDevicesByUser(userId);
 
         return await WithManagedDevices(items.Select(t => this._mapper.Map<Device>(t)));
     }
-    
+
     public async Task<IEnumerable<Device>> GetDevices()
     {
         var items = await this._microsoftService.GetDevices();
@@ -94,8 +103,8 @@ public class GraphitieService : IGraphitieService
 
     public async Task<IEnumerable<DevicePerformance>> GetDevicePerformance()
     {
+        //        var items2 = await this._microsoftService.GetDeviceStartupPerformance();
         var items = await this._microsoftService.GetDevicePerformance();
-
         return items.Select(t => this._mapper.Map<DevicePerformance>(t));
     }
 
