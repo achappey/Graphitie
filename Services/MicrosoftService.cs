@@ -31,6 +31,7 @@ public interface IMicrosoftService
     public Task<IEnumerable<ListItem>> GetEvents(string siteId);
     public Task DeleteGroupOwner(string siteId, string userId);
     public Task DeleteGroupMember(string siteId, string userId);
+    public Task RenameGroup(string siteId, string name);
 
 }
 
@@ -42,6 +43,21 @@ public class MicrosoftService : IMicrosoftService
     {
         _graphServiceClient = graphServiceClient;
     }
+
+    public async Task RenameGroup(string siteId, string name)
+    {
+        var group = await this._graphServiceClient.Groups[siteId]
+        .Request()
+        .GetAsync();
+
+        group.DisplayName = name;
+
+        await _graphServiceClient.Groups[siteId]
+            .Request()
+            .UpdateAsync(group);
+
+    }
+
 
     public async Task<ContactFolder> EnsureContactFolder(string userId, string name)
     {
