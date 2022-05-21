@@ -14,6 +14,7 @@ public interface IGraphitieService
     public Task<IEnumerable<Language>> GetLanguages();
     public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
     public Task AddOwner(string siteId, string userId);
+    public Task DeleteOwner(string siteId, string userId);
     public Task SendEmail(string user, string sender, string recipient, string subject, string html);
     public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userId);
     public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
@@ -58,6 +59,11 @@ public class GraphitieService : IGraphitieService
     public async Task AddOwner(string siteId, string userId)
     {
         await this._microsoftService.AddGroupOwner(siteId, userId);
+    }
+
+  public async Task DeleteOwner(string siteId, string userId)
+    {
+        await this._microsoftService.DeleteGroupOwner(siteId, userId);
     }
 
     public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)

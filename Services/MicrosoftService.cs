@@ -29,6 +29,7 @@ public interface IMicrosoftService
     public Task<Contact> UpdateContact(string userId, string folderId, Contact contact);
     public Task DeleteContact(string userId, string folderId, string id);
     public Task<IEnumerable<ListItem>> GetEvents(string siteId);
+    public Task DeleteGroupOwner(string siteId, string userId);
 
 
 }
@@ -72,7 +73,7 @@ public class MicrosoftService : IMicrosoftService
         var lists = await this._graphServiceClient.GetLists(siteId);
         var eventList = lists.FirstOrDefault(t => t.Name == "Events");
 
-        if(eventList != null)
+        if (eventList != null)
             return await this._graphServiceClient.GetEvents(siteId, eventList.Id);
 
         return new List<ListItem>();
@@ -148,6 +149,14 @@ public class MicrosoftService : IMicrosoftService
       .Request()
       .AddAsync(directoryObject);
     }
+
+    public async Task DeleteGroupOwner(string siteId, string userId)
+    {
+        await _graphServiceClient.Groups[siteId].Owners[userId].Reference
+            .Request()
+            .DeleteAsync();
+    }
+
 
     public async Task SendEmail(string user, string from, string to, string subject, string html)
     {
