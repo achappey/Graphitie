@@ -20,6 +20,7 @@ public interface IGraphitieService
     public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
     public Task<int> CopyMemberContacts(string userId, string folderName, string? birthdaySiteId = null);
     public Task AddContacts(string userId, string folderName);
+    public Task DeleteMember(string siteId, string userId);
 }
 
 public class GraphitieService : IGraphitieService
@@ -61,6 +62,10 @@ public class GraphitieService : IGraphitieService
         await this._microsoftService.AddGroupOwner(siteId, userId);
     }
 
+  public async Task DeleteMember(string siteId, string userId)
+    {
+        await this._microsoftService.DeleteGroupMember(siteId, userId);
+    }
   public async Task DeleteOwner(string siteId, string userId)
     {
         await this._microsoftService.DeleteGroupOwner(siteId, userId);

@@ -30,7 +30,7 @@ public interface IMicrosoftService
     public Task DeleteContact(string userId, string folderId, string id);
     public Task<IEnumerable<ListItem>> GetEvents(string siteId);
     public Task DeleteGroupOwner(string siteId, string userId);
-
+    public Task DeleteGroupMember(string siteId, string userId);
 
 }
 
@@ -153,6 +153,13 @@ public class MicrosoftService : IMicrosoftService
     public async Task DeleteGroupOwner(string siteId, string userId)
     {
         await _graphServiceClient.Groups[siteId].Owners[userId].Reference
+            .Request()
+            .DeleteAsync();
+    }
+
+    public async Task DeleteGroupMember(string siteId, string userId)
+    {
+        await _graphServiceClient.Groups[siteId].Members[userId].Reference
             .Request()
             .DeleteAsync();
     }
