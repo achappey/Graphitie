@@ -7,6 +7,7 @@ public interface IMicrosoftService
 {
     public Task<IEnumerable<User>> GetUsers();
     public Task<User?> GetUserByEmail(string email);
+    public Task<User?> GetUserById(string id);
     public Task<IEnumerable<User>> GetMembers();
     public Task<IEnumerable<Alert>> GetSecurityAlerts();
     public Task<IEnumerable<Alert>> GetSecurityAlertsByUser(string userPrincipalName);
@@ -14,6 +15,7 @@ public interface IMicrosoftService
     public Task<IEnumerable<ManagedDevice>> GetManagedDevices();
     public Task<IEnumerable<SignIn>> GetSignIns();
     public Task SendEmail(string user, string from, string to, string subject, string html);
+    public Task AddGroupOwner(string siteId, string userId);
     public Task<IEnumerable<SignIn>> GetSignInsByUser(string userId);
     public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
     public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();
@@ -21,6 +23,13 @@ public interface IMicrosoftService
     public Task<IEnumerable<SecureScore>> GetSecureScores();
     public Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails();
     public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userPrincipalName);
+    public Task<Microsoft.Graph.ContactFolder> EnsureContactFolder(string userId, string name);
+    public Task<IEnumerable<Contact>> GetContactFolder(string userId, string name, string reference);
+    public Task<Contact> CreateContact(string userId, string folderId, Contact contact);
+    public Task<Contact> UpdateContact(string userId, string folderId, Contact contact);
+    public Task DeleteContact(string userId, string folderId, string id);
+    public Task<IEnumerable<ListItem>> GetEvents(string siteId);
+
 
 }
 
@@ -31,6 +40,42 @@ public class MicrosoftService : IMicrosoftService
     public MicrosoftService(Microsoft.Graph.GraphServiceClient graphServiceClient)
     {
         _graphServiceClient = graphServiceClient;
+    }
+
+    public async Task<ContactFolder> EnsureContactFolder(string userId, string name)
+    {
+        return await this._graphServiceClient.EnsureContactFolder(userId, name);
+    }
+
+    public async Task<IEnumerable<Contact>> GetContactFolder(string userId, string name, string reference)
+    {
+        return await this._graphServiceClient.GetContactFolder(userId, name, reference);
+    }
+
+    public async Task<Contact> CreateContact(string userId, string folderId, Contact contact)
+    {
+        return await this._graphServiceClient.CreateContact(userId, folderId, contact);
+    }
+
+    public async Task<Contact> UpdateContact(string userId, string folderId, Contact contact)
+    {
+        return await this._graphServiceClient.UpdateContact(userId, folderId, contact);
+    }
+
+    public async Task DeleteContact(string userId, string folderId, string id)
+    {
+        await this._graphServiceClient.DeleteContact(userId, folderId, id);
+    }
+
+    public async Task<IEnumerable<ListItem>> GetEvents(string siteId)
+    {
+        var lists = await this._graphServiceClient.GetLists(siteId);
+        var eventList = lists.FirstOrDefault(t => t.Name == "Events");
+
+        if(eventList != null)
+            return await this._graphServiceClient.GetEvents(siteId, eventList.Id);
+
+        return new List<ListItem>();
     }
 
     public async Task<byte[]> DownloadFile(string url)
@@ -50,7 +95,7 @@ public class MicrosoftService : IMicrosoftService
         return await this.GetEnabledMembers();
     }
 
-    private async Task<IEnumerable<Microsoft.Graph.User>> GetEnabledMembers()
+    private async Task<IEnumerable<User>> GetEnabledMembers()
     {
         var items = await this.GetGraphUsers("accountEnabled eq true and userType eq 'Member'");
 
@@ -59,7 +104,7 @@ public class MicrosoftService : IMicrosoftService
         .Where(r => !string.IsNullOrEmpty(r.Mail));
     }
 
-    private async Task<IEnumerable<Microsoft.Graph.User>> GetGraphUsers(string filter = "")
+    private async Task<IEnumerable<User>> GetGraphUsers(string filter = "")
     {
         var items = await _graphServiceClient.Users
         .Request()
@@ -67,7 +112,7 @@ public class MicrosoftService : IMicrosoftService
         .Filter(filter)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.User>(items, 500, 500);
+        return await _graphServiceClient.PagedRequest<User>(items, 500, 500);
     }
 
     public async Task<User?> GetUserByEmail(string email)
@@ -77,10 +122,31 @@ public class MicrosoftService : IMicrosoftService
         return items.FirstOrDefault();
     }
 
+    public async Task<User?> GetUserById(string id)
+    {
+        return await _graphServiceClient.Users[id]
+        .Request()
+        .GetAsync();
+    }
+
 
     public async Task<IEnumerable<User>> GetUsers()
     {
         return await this.GetGraphUsers();
+    }
+
+    public async Task AddGroupOwner(string siteId, string userId)
+    {
+        var directoryObject = new DirectoryObject
+        {
+            Id = userId
+        };
+
+        await this._graphServiceClient.Groups[siteId]
+      .Owners
+      .References
+      .Request()
+      .AddAsync(directoryObject);
     }
 
     public async Task SendEmail(string user, string from, string to, string subject, string html)
@@ -95,19 +161,19 @@ public class MicrosoftService : IMicrosoftService
                     Address = from
                 }
             },
-            ToRecipients = new List<Microsoft.Graph.Recipient>()
+            ToRecipients = new List<Recipient>()
             {
                 new Microsoft.Graph.Recipient
                 {
-                    EmailAddress = new Microsoft.Graph.EmailAddress
+                    EmailAddress = new EmailAddress
                     {
                         Address = to
                     }
                 }
          },
-            Body = new Microsoft.Graph.ItemBody()
+            Body = new ItemBody()
             {
-                ContentType = Microsoft.Graph.BodyType.Html,
+                ContentType = BodyType.Html,
                 Content = html
             }
         };
@@ -129,14 +195,14 @@ public class MicrosoftService : IMicrosoftService
         return await _graphServiceClient.PagedRequest<Microsoft.Graph.Device>(items, 100, 500);
     }
 
-    public async Task<IEnumerable<Microsoft.Graph.ManagedDevice>> GetManagedDevices()
+    public async Task<IEnumerable<ManagedDevice>> GetManagedDevices()
     {
         var items = await this._graphServiceClient.DeviceManagement.ManagedDevices
        .Request()
        .Top(300)
        .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.ManagedDevice>(items, 200, 500);
+        return await _graphServiceClient.PagedRequest<ManagedDevice>(items, 200, 500);
     }
 
     public async Task<IEnumerable<SecureScore>> GetSecureScores()
@@ -231,7 +297,7 @@ public class MicrosoftService : IMicrosoftService
         return await _graphServiceClient.PagedRequest<Microsoft.Graph.UserRegistrationDetails>(iterator);
     }
 
-    public async Task<IEnumerable<Microsoft.Graph.SignIn>> GetSignInsByUser(string userId)
+    public async Task<IEnumerable<SignIn>> GetSignInsByUser(string userId)
     {
         return await this._graphServiceClient.AuditLogs.SignIns.Request()
         .Filter(string.Format("userId eq '{0}'", userId))
@@ -239,14 +305,14 @@ public class MicrosoftService : IMicrosoftService
         .GetAsync();
     }
 
-    public async Task<IEnumerable<Microsoft.Graph.SignIn>> GetSignIns()
+    public async Task<IEnumerable<SignIn>> GetSignIns()
     {
         var iterator = await this._graphServiceClient.AuditLogs.SignIns.Request()
         .Filter(string.Format("createdDateTime ge {0}", DateTime.UtcNow.AddDays(-4).Date.ToString("yyyy-MM-ddTHH:mm:ssZ")))
         .Top(999)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.SignIn>(iterator, 999, 500);
+        return await _graphServiceClient.PagedRequest<SignIn>(iterator, 999, 500);
     }
 
 

@@ -13,10 +13,12 @@ public interface IGraphitieService
     public Task<IEnumerable<Repository>> GetRepositories();
     public Task<IEnumerable<Language>> GetLanguages();
     public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
+    public Task AddOwner(string siteId, string userId);
     public Task SendEmail(string user, string sender, string recipient, string subject, string html);
     public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userId);
     public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
-
+    public Task<int> CopyMemberContacts(string userId, string folderName, string? birthdaySiteId = null);
+    public Task AddContacts(string userId, string folderName);
 }
 
 public class GraphitieService : IGraphitieService
@@ -46,9 +48,16 @@ public class GraphitieService : IGraphitieService
         _gitHubClient = gitHubClient;
     }
 
+
+
     public async Task SendEmail(string user, string sender, string recipient, string subject, string html)
     {
         await this._microsoftService.SendEmail(user, sender, recipient, subject, html);
+    }
+
+    public async Task AddOwner(string siteId, string userId)
+    {
+        await this._microsoftService.AddGroupOwner(siteId, userId);
     }
 
     public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)
@@ -91,6 +100,71 @@ public class GraphitieService : IGraphitieService
         return items.Select(t => this._mapper.Map<User>(t));
     }
 
+
+    public async Task<int> CopyMemberContacts(string userId, string folderName, string? birthdaySiteId = null)
+    {
+
+        var graphUser = await _microsoftService.GetUserById(userId);
+
+        if (string.IsNullOrEmpty(graphUser?.Mail))
+        {
+            return 0;
+        }
+
+        Dictionary<string, DateTimeOffset> birthdays = new Dictionary<string, DateTimeOffset>();
+
+        if (!string.IsNullOrEmpty(birthdaySiteId))
+        {
+            var birthdayEvents = await _microsoftService.GetEvents(birthdaySiteId);
+
+            birthdays = birthdayEvents.ToBirthdays();
+        }
+
+        var users = await _microsoftService.GetMembers();
+
+        users = users
+        .Where(y => !string.IsNullOrEmpty(y.GivenName))
+        .Where(y => !string.IsNullOrEmpty(y.Department))
+        .Where(y => !string.IsNullOrEmpty(y.Mail))
+         .Select(v => v.WithBirthday(birthdays))
+        .Where(y => y.Id != userId);
+
+        var contactFolder = await _microsoftService.EnsureContactFolder(userId, folderName);
+        var folderContacts = await _microsoftService.GetContactFolder(userId, contactFolder.Id, GraphConstants.SYNC_REFERENCE);
+
+        var createContacts = users
+                .Where(v => folderContacts.All(u => v.Id != u.ToReferenceId()));
+
+        foreach (var userContact in createContacts)
+        {
+            await _microsoftService.CreateContact(userId, contactFolder.Id, userContact.ToContact(null));
+        }
+
+        var updateContacts = users
+                .Where(v => folderContacts.Any(u => v.Id == u.ToReferenceId()))
+                .Where(v => !v.IsEqual(folderContacts.First(u => v.Id == u.ToReferenceId())))
+                .ToDictionary(v => folderContacts.First(u => v.Id == u.ToReferenceId()).Id, v => v);
+
+        foreach (var userContact in updateContacts)
+        {
+            await _microsoftService.UpdateContact(userId, contactFolder.Id, userContact.Value.ToContact(userContact.Key));
+        }
+
+        var deleteContacts = folderContacts
+                .Where(v => users.All(u => u.Id != v.ToReferenceId()));
+
+        foreach (var current in deleteContacts)
+        {
+            await _microsoftService.DeleteContact(userId, contactFolder.Id, current.Id);
+        }
+
+        return users.Count();
+    }
+
+    public async Task AddContacts(string userId, string folderName)
+    {
+    }
+
     public async Task<IEnumerable<Employee>> GetEmployees()
     {
         var items = await this._microsoftService.GetMembers();
@@ -100,7 +174,6 @@ public class GraphitieService : IGraphitieService
 
     public async Task<IEnumerable<DevicePerformance>> GetDevicePerformance()
     {
-        //        var items2 = await this._microsoftService.GetDeviceStartupPerformance();
         var items = await this._microsoftService.GetDevicePerformance();
         return items.Select(t => this._mapper.Map<DevicePerformance>(t));
     }
