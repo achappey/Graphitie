@@ -22,6 +22,7 @@ public interface IGraphitieService
     public Task AddContacts(string userId, string folderName);
     public Task DeleteMember(string siteId, string userId);
     public Task RenameGroup(string siteId, string name);
+    public Task AddTab(string siteId, string name, string url);
 }
 
 public class GraphitieService : IGraphitieService
@@ -56,6 +57,11 @@ public class GraphitieService : IGraphitieService
     public async Task SendEmail(string user, string sender, string recipient, string subject, string html)
     {
         await this._microsoftService.SendEmail(user, sender, recipient, subject, html);
+    }
+
+    public async Task AddTab(string siteId, string name, string url)
+    {
+        await this._microsoftService.AddTab(siteId, name, url);
     }
 
     public async Task RenameGroup(string siteId, string name)

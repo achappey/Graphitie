@@ -32,6 +32,7 @@ public interface IMicrosoftService
     public Task DeleteGroupOwner(string siteId, string userId);
     public Task DeleteGroupMember(string siteId, string userId);
     public Task RenameGroup(string siteId, string name);
+    public Task AddTab(string siteId, string name, string url);
 
 }
 
@@ -43,6 +44,30 @@ public class MicrosoftService : IMicrosoftService
     {
         _graphServiceClient = graphServiceClient;
     }
+
+    public async Task AddTab(string siteId, string name, string url)
+    {
+        var channels = await this._graphServiceClient.Teams[siteId].AllChannels
+        .Request()
+        .GetAsync();
+
+        var channel = channels.First(a => a.DisplayName == "General");
+        
+        var group = await this._graphServiceClient.Teams[siteId]
+        .Channels[channel.Id]
+        .Tabs
+        .Request()
+        .AddAsync(new TeamsTab() {
+            TeamsAppId = "com.microsoft.teamspace.tab.web",
+            DisplayName = name,
+            Configuration = new TeamsTabConfiguration() {
+                WebsiteUrl = url,
+                ContentUrl = url
+            }
+        });
+
+    }
+
 
     public async Task RenameGroup(string siteId, string name)
     {
