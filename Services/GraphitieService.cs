@@ -97,6 +97,13 @@ public class GraphitieService : IGraphitieService
         return await WithManagedDevices(items.Select(t => this._mapper.Map<Device>(t)));
     }
 
+ public async Task<IEnumerable<License>> GetLicenses()
+    {
+        var items = await this._microsoftService.GetLicenses();
+
+        return items.Select(t => this._mapper.Map<License>(t));
+    }
+
     private async Task<IEnumerable<Device>> WithManagedDevices(IEnumerable<Device> devices)
     {
         var managedDevices = await this._microsoftService.GetManagedDevices();

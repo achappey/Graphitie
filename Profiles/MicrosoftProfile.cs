@@ -8,6 +8,7 @@ public class MicrosoftProfile : AutoMapper.Profile
     public MicrosoftProfile()
     {
         CreateMap<User, Graphitie.Models.User>();
+        
         CreateMap<User, Graphitie.Models.Employee>();
         CreateMap<UserRegistrationDetails, Graphitie.Models.UserRegistrationDetails>();
         
@@ -15,9 +16,12 @@ public class MicrosoftProfile : AutoMapper.Profile
         CreateMap<SignInLocation, Graphitie.Models.SignInLocation>();
         CreateMap<SignInStatus, Graphitie.Models.SignInStatus>();
 
+        CreateMap<SubscribedSku, Graphitie.Models.License>()
+        .ForMember(t => t.EnabledUnits, f => f.MapFrom(y => y.PrepaidUnits.Enabled));
+
+        CreateMap<AssignedLicense,string>().ConvertUsing(y => y.SkuId.HasValue ? y.SkuId.ToString() : null);
+
         CreateMap<UserExperienceAnalyticsDevicePerformance, Graphitie.Models.DevicePerformance>();
-//        CreateMap<UserExperienceAnalyticsDeviceStartupProcess, Graphitie.Models.DeviceStartupProcess>();
- //       CreateMap<UserExperienceAnalyticsDeviceStartupHistory, Graphitie.Models.DeviceStartup>();
 
         CreateMap<Device, Graphitie.Models.Device>()
         .ForMember(t => t.RegisteredOwner, f => f.MapFrom(g => g.RegisteredOwners.Select(z => z.Id).FirstOrDefault()));

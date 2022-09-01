@@ -106,6 +106,7 @@ static IEdmModel GetGraphModel(string name)
 
     builder.EntitySet<Graphitie.Models.User>("Users").EntityType.Namespace = name;
     builder.EntitySet<Graphitie.Models.Device>("Devices").EntityType.Namespace = name;
+    builder.EntitySet<Graphitie.Models.License>("Licenses").EntityType.Namespace = name;
     builder.EntitySet<Graphitie.Models.SecurityAlert>("SecurityAlerts").EntityType.Namespace = name;
     builder.EntitySet<Graphitie.Models.SecureScore>("SecureScores").EntityType.Namespace = name;
     builder.EntitySet<Graphitie.Models.SignIn>("SignIns").EntityType.Namespace = name;

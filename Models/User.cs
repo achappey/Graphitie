@@ -5,6 +5,8 @@ public class User
 
     public string Id { get; set; } = null!;
     public string? DisplayName { get; set; }
+    public string? GivenName { get; set; }
+    public string? Surname { get; set; }
     public string? JobTitle { get; set; }
     public string? Department { get; set; }
     public string? MobilePhone { get; set; }    
@@ -16,5 +18,7 @@ public class User
     public bool AccountEnabled { get; set; }
     public DateTimeOffset? CreatedDateTime { get; set; }
     public IEnumerable<Language> Languages { get; set; } = null!;
+
+    public IEnumerable<string> AssignedLicenses { get; set; } = null!;
 
 }
