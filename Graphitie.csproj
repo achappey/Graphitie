@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.4.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="6.0.8" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Graph.Beta" Version="4.55.0-preview" />
+    <PackageReference Include="Microsoft.Graph.Beta" Version="4.57.0-preview" />
     <PackageReference Include="Microsoft.Identity.Web" Version="1.25.2" />
     <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraphBeta" Version="1.25.2" />
     <PackageReference Include="Octokit" Version="2.0.1" />

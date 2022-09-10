@@ -13,6 +13,7 @@ public class MicrosoftProfile : AutoMapper.Profile
         CreateMap<UserRegistrationDetails, Graphitie.Models.UserRegistrationDetails>();
         
         CreateMap<SignIn, Graphitie.Models.SignIn>();
+        CreateMap<Group, Graphitie.Models.Group>();
         CreateMap<SignInLocation, Graphitie.Models.SignInLocation>();
         CreateMap<SignInStatus, Graphitie.Models.SignInStatus>();
 

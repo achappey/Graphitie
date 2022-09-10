@@ -12,6 +12,7 @@ public interface IMicrosoftService
     public Task<IEnumerable<Alert>> GetSecurityAlerts();
     public Task<IEnumerable<Alert>> GetSecurityAlertsByUser(string userPrincipalName);
     public Task<IEnumerable<Device>> GetDevices();
+    public Task<IEnumerable<Group>> GetGroups();
     public Task<IEnumerable<SubscribedSku>> GetLicenses();
     public Task<IEnumerable<ManagedDevice>> GetManagedDevices();
     public Task<IEnumerable<SignIn>> GetSignIns();
@@ -158,6 +159,16 @@ public class MicrosoftService : IMicrosoftService
         .GetAsync();
 
         return await _graphServiceClient.PagedRequest<User>(items, 500, 500);
+    }
+
+ public async Task<IEnumerable<Group>> GetGroups()
+    {
+        var items = await _graphServiceClient.Groups
+        .Request()
+       // .Top(500)
+        .GetAsync();
+
+        return await _graphServiceClient.PagedRequest<Group>(items, 500, 500);
     }
 
     public async Task<User?> GetUserByEmail(string email)

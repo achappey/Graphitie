@@ -17,8 +17,6 @@ public class User
     public string? UserType { get; set; }
     public bool AccountEnabled { get; set; }
     public DateTimeOffset? CreatedDateTime { get; set; }
-    public IEnumerable<Language> Languages { get; set; } = null!;
-
     public IEnumerable<string> AssignedLicenses { get; set; } = null!;
 
 }

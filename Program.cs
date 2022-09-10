@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using Graphitie.Services;
 using Graphitie.Connectors.WakaTime;
-using Graphitie.Connectors.Duolingo;
 using Graphitie;
 
 using Octokit;
@@ -38,7 +37,6 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddAutoMapper(
           typeof(Graphitie.Profiles.Microsoft.MicrosoftProfile),
-          typeof(Graphitie.Profiles.Duolingo.DuolingoProfile),
           typeof(Graphitie.Profiles.WakaTime.WakaTimeProfile),
           typeof(Graphitie.Profiles.GitHub.GitHubProfile)
       );
@@ -46,10 +44,8 @@ builder.Services.AddAutoMapper(
 builder.Services.AddScoped<IClaimsTransformation, AddRolesClaimsTransformation>();
 
 builder.Services.AddScoped<GraphitieService>();
-builder.Services.AddSingleton<DuolingoService>();
 builder.Services.AddScoped<MicrosoftService>();
 builder.Services.AddSingleton<KeyVaultService>();
-builder.Services.AddSingleton<Duolingo>();
 builder.Services.AddSingleton<WakaTime>();
 builder.Services.AddSingleton<GitHubClient>(new GitHubClient(new ProductHeaderValue(appConfig.NameSpace)));
 
@@ -106,6 +102,7 @@ static IEdmModel GetGraphModel(string name)
 
     builder.EntitySet<Graphitie.Models.User>("Users").EntityType.Namespace = name;
     builder.EntitySet<Graphitie.Models.Device>("Devices").EntityType.Namespace = name;
+    builder.EntitySet<Graphitie.Models.Group>("Groups").EntityType.Namespace = name;
     builder.EntitySet<Graphitie.Models.License>("Licenses").EntityType.Namespace = name;
     builder.EntitySet<Graphitie.Models.SecurityAlert>("SecurityAlerts").EntityType.Namespace = name;
     builder.EntitySet<Graphitie.Models.SecureScore>("SecureScores").EntityType.Namespace = name;
@@ -116,9 +113,6 @@ static IEdmModel GetGraphModel(string name)
 
     return builder.GetEdmModel();
 }
-
-
-
 
 public class AddRolesClaimsTransformation : IClaimsTransformation
 {

@@ -10,8 +10,8 @@ public interface IGraphitieService
     public Task<IEnumerable<User>> GetUsers();
     public Task<IEnumerable<User>> GetMembers();
     public Task<IEnumerable<Employee>> GetEmployees();
+    public Task<IEnumerable<Group>> GetGroups();
     public Task<IEnumerable<Repository>> GetRepositories();
-    public Task<IEnumerable<Language>> GetLanguages();
     public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
     public Task AddOwner(string siteId, string userId);
     public Task DeleteOwner(string siteId, string userId);
@@ -29,7 +29,6 @@ public class GraphitieService : IGraphitieService
 {
     private readonly Microsoft.Graph.GraphServiceClient _graphServiceClient;
     private readonly KeyVaultService _keyVaultService;
-    private readonly IDuolingoService _duolingoService;
     private readonly IMicrosoftService _microsoftService;
     private readonly WakaTime _wakatime;
     private readonly IMapper _mapper;
@@ -38,14 +37,12 @@ public class GraphitieService : IGraphitieService
     public GraphitieService(Microsoft.Graph.GraphServiceClient graphServiceClient,
     KeyVaultService keyVaultService,
     IMapper mapper,
-    DuolingoService duolingoService,
     MicrosoftService microsoftService,
     WakaTime wakatime,
     Octokit.GitHubClient gitHubClient)
     {
         _graphServiceClient = graphServiceClient;
         _keyVaultService = keyVaultService;
-        _duolingoService = duolingoService;
         _wakatime = wakatime;
         _microsoftService = microsoftService;
         _mapper = mapper;
@@ -129,7 +126,13 @@ public class GraphitieService : IGraphitieService
 
         return items.Select(t => this._mapper.Map<User>(t));
     }
+  
+  public async Task<IEnumerable<Group>> GetGroups()
+    {
+        var items = await this._microsoftService.GetGroups();
 
+        return items.Select(t => this._mapper.Map<Group>(t));
+    }
 
     public async Task<int> CopyMemberContacts(string userId, string folderName, string? birthdaySiteId = null)
     {
@@ -276,12 +279,6 @@ public class GraphitieService : IGraphitieService
         return result;
     }
 
-    public async Task<IEnumerable<Language>> GetLanguages()
-    {
-        return await this._duolingoService.GetLanguages();
-    }
-
-
     private async Task<IEnumerable<Activity>> GetWakaTimeActivities()
     {
         var items = await this.GetWakaTimeUsers();
@@ -317,17 +314,6 @@ public class GraphitieService : IGraphitieService
 
         return result.OrderByDescending(y => y.DateTime);
     }
-
-    public async Task<IEnumerable<Activity>> GetActivities()
-    {
-        var duolingoItems = await this._duolingoService.GetActivities();
-        var githubItems = await this.GetWakaTimeActivities();
-
-        return duolingoItems
-        .Concat(githubItems)
-        .OrderByDescending(u => u.DateTime);
-    }
-
 
     private async Task<IEnumerable<string>> GetGitHubUsers()
     {
