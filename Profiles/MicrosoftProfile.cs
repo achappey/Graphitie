@@ -9,8 +9,7 @@ public class MicrosoftProfile : AutoMapper.Profile
     {
         CreateMap<User, Graphitie.Models.User>();
         
-        CreateMap<User, Graphitie.Models.Employee>();
-        CreateMap<UserRegistrationDetails, Graphitie.Models.UserRegistrationDetails>();
+        CreateMap<User, Graphitie.Models.Employee>();        
         
         CreateMap<SignIn, Graphitie.Models.SignIn>();
         CreateMap<Group, Graphitie.Models.Group>();

@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Graphitie.Services;
-using Microsoft.AspNetCore.Authorization;
 using Graphitie.Models;
 
 namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-//[Authorize(Roles = ("Administrators"))]
 public class EmailController : ControllerBase
 {
     private readonly ILogger<EmailController> _logger;

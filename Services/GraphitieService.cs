@@ -1,7 +1,6 @@
 using AutoMapper;
 using Graphitie.Models;
 using Graphitie.Extensions;
-using Graphitie.Connectors.WakaTime;
 
 namespace Graphitie.Services;
 
@@ -10,13 +9,10 @@ public interface IGraphitieService
     public Task<IEnumerable<User>> GetUsers();
     public Task<IEnumerable<User>> GetMembers();
     public Task<IEnumerable<Employee>> GetEmployees();
-    public Task<IEnumerable<Group>> GetGroups();
-    public Task<IEnumerable<Repository>> GetRepositories();
-    public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
+    public Task<IEnumerable<Group>> GetGroups();    
     public Task AddOwner(string siteId, string userId);
     public Task DeleteOwner(string siteId, string userId);
     public Task SendEmail(string user, string sender, string recipient, string subject, string html);
-    public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userId);
     public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
     public Task<int> CopyMemberContacts(string userId, string folderName, string? birthdaySiteId = null);
     public Task AddContacts(string userId, string folderName);
@@ -29,24 +25,18 @@ public class GraphitieService : IGraphitieService
 {
     private readonly Microsoft.Graph.GraphServiceClient _graphServiceClient;
     private readonly KeyVaultService _keyVaultService;
-    private readonly IMicrosoftService _microsoftService;
-    private readonly WakaTime _wakatime;
+    private readonly IMicrosoftService _microsoftService;   
     private readonly IMapper _mapper;
-    private readonly Octokit.GitHubClient _gitHubClient;
-
+   
     public GraphitieService(Microsoft.Graph.GraphServiceClient graphServiceClient,
     KeyVaultService keyVaultService,
     IMapper mapper,
-    MicrosoftService microsoftService,
-    WakaTime wakatime,
-    Octokit.GitHubClient gitHubClient)
+    MicrosoftService microsoftService)
     {
         _graphServiceClient = graphServiceClient;
-        _keyVaultService = keyVaultService;
-        _wakatime = wakatime;
+        _keyVaultService = keyVaultService;    
         _microsoftService = microsoftService;
-        _mapper = mapper;
-        _gitHubClient = gitHubClient;
+        _mapper = mapper;   
     }
 
 
@@ -71,20 +61,13 @@ public class GraphitieService : IGraphitieService
         await this._microsoftService.AddGroupOwner(siteId, userId);
     }
 
-  public async Task DeleteMember(string siteId, string userId)
+    public async Task DeleteMember(string siteId, string userId)
     {
         await this._microsoftService.DeleteGroupMember(siteId, userId);
     }
-  public async Task DeleteOwner(string siteId, string userId)
+    public async Task DeleteOwner(string siteId, string userId)
     {
         await this._microsoftService.DeleteGroupOwner(siteId, userId);
-    }
-
-    public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)
-    {
-        var items = await this._microsoftService.GetDevicesByUser(userId);
-
-        return await WithManagedDevices(items.Select(t => this._mapper.Map<Device>(t)));
     }
 
     public async Task<IEnumerable<Device>> GetDevices()
@@ -94,7 +77,7 @@ public class GraphitieService : IGraphitieService
         return await WithManagedDevices(items.Select(t => this._mapper.Map<Device>(t)));
     }
 
- public async Task<IEnumerable<License>> GetLicenses()
+    public async Task<IEnumerable<License>> GetLicenses()
     {
         var items = await this._microsoftService.GetLicenses();
 
@@ -126,8 +109,8 @@ public class GraphitieService : IGraphitieService
 
         return items.Select(t => this._mapper.Map<User>(t));
     }
-  
-  public async Task<IEnumerable<Group>> GetGroups()
+
+    public async Task<IEnumerable<Group>> GetGroups()
     {
         var items = await this._microsoftService.GetGroups();
 
@@ -225,33 +208,12 @@ public class GraphitieService : IGraphitieService
 
         return items.Select(t => this._mapper.Map<SecurityAlert>(t));
     }
-    public async Task<IEnumerable<SecurityAlert>> GetSecurityAlertsByUser(string userPrincipalName)
-    {
-        var items = await this._microsoftService.GetSecurityAlertsByUser(userPrincipalName);
-
-        return items.Select(t => this._mapper.Map<SecurityAlert>(t));
-    }
 
     public async Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails()
     {
         var items = await this._microsoftService.GetUserRegistrationDetails();
 
         return items.Select(t => this._mapper.Map<UserRegistrationDetails>(t));
-    }
-
-    public async Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userPrincipalName)
-    {
-        var item = await this._microsoftService.GetUserRegistrationDetailsByUser(userPrincipalName);
-
-        return item != null ? this._mapper.Map<UserRegistrationDetails>(item) : null;
-
-    }
-
-    public async Task<IEnumerable<SignIn>> GetSignInsByUser(string userId)
-    {
-        var items = await this._microsoftService.GetSignInsByUser(userId);
-
-        return items.Select(t => this._mapper.Map<SignIn>(t));
     }
 
     public async Task<IEnumerable<SignIn>> GetSignIns()
@@ -261,97 +223,4 @@ public class GraphitieService : IGraphitieService
         return items.Select(t => this._mapper.Map<SignIn>(t));
     }
 
-    public async Task<IEnumerable<Repository>> GetRepositories()
-    {
-        var githubItems = await this.GetGitHubUsers();
-
-        List<Repository> result = new List<Repository>();
-
-        foreach (var github in githubItems)
-        {
-            var repos = await _gitHubClient.Repository.GetAllForUser(github);
-
-            result.AddRange(
-                repos
-                .Select(t => this._mapper.Map<Repository>(t)));
-        }
-
-        return result;
-    }
-
-    private async Task<IEnumerable<Activity>> GetWakaTimeActivities()
-    {
-        var items = await this.GetWakaTimeUsers();
-
-        List<Activity> result = new List<Activity>();
-
-        foreach (var item in items)
-        {
-            var repos = await _wakatime.GetDurations(item, DateTime.Now);
-
-            result.AddRange(
-                repos
-                .Select(t => this._mapper.Map<Activity>(t)));
-        }
-
-        return result.OrderByDescending(y => y.DateTime);
-    }
-
-    private async Task<IEnumerable<Activity>> GetGithubActivities()
-    {
-        var githubItems = await this.GetGitHubUsers();
-
-        List<Activity> result = new List<Activity>();
-
-        foreach (var github in githubItems)
-        {
-            var repos = await _gitHubClient.Activity.Events.GetAllUserPerformedPublic(github);
-
-            result.AddRange(
-                repos
-                .Select(t => this._mapper.Map<Activity>(t)));
-        }
-
-        return result.OrderByDescending(y => y.DateTime);
-    }
-
-    private async Task<IEnumerable<string>> GetGitHubUsers()
-    {
-        var items = this._keyVaultService.GetSecretProperties("github");
-
-        List<string> result = new List<string>();
-
-        foreach (var item in items)
-        {
-            var secret = await this._keyVaultService.GetSecret(item.Name);
-
-            if (secret != null)
-            {
-                result.Add(secret.Value);
-            }
-        }
-
-        return result;
-
-    }
-
-    private async Task<IEnumerable<string>> GetWakaTimeUsers()
-    {
-        var items = this._keyVaultService.GetSecretProperties("wakatime");
-
-        List<string> result = new List<string>();
-
-        foreach (var item in items)
-        {
-            var secret = await this._keyVaultService.GetSecret(item.Name);
-
-            if (secret != null)
-            {
-                result.Add(secret.Value);
-            }
-        }
-
-        return result;
-
-    }
 }

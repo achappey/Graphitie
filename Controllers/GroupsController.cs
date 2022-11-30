@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 
@@ -9,7 +8,6 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize(Roles = ("Administrators"))]
 public class GroupsController : ControllerBase
 {
     private readonly ILogger<GroupsController> _logger;

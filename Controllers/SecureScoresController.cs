@@ -10,7 +10,6 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-[Authorize(Roles = ("Administrators,Users"))]
 public class SecureScoresController : ControllerBase
 {
     private readonly ILogger<SecureScoresController> _logger;

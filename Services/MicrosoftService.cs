@@ -9,22 +9,18 @@ public interface IMicrosoftService
     public Task<User?> GetUserByEmail(string email);
     public Task<User?> GetUserById(string id);
     public Task<IEnumerable<User>> GetMembers();
-    public Task<IEnumerable<Alert>> GetSecurityAlerts();
-    public Task<IEnumerable<Alert>> GetSecurityAlertsByUser(string userPrincipalName);
+    public Task<IEnumerable<Alert>> GetSecurityAlerts();   
     public Task<IEnumerable<Device>> GetDevices();
     public Task<IEnumerable<Group>> GetGroups();
     public Task<IEnumerable<SubscribedSku>> GetLicenses();
     public Task<IEnumerable<ManagedDevice>> GetManagedDevices();
     public Task<IEnumerable<SignIn>> GetSignIns();
     public Task SendEmail(string user, string from, string to, string subject, string html);
-    public Task AddGroupOwner(string siteId, string userId);
-    public Task<IEnumerable<SignIn>> GetSignInsByUser(string userId);
+    public Task AddGroupOwner(string siteId, string userId);   
     public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
-    public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();
-    public Task<IEnumerable<Device>> GetDevicesByUser(string userId);
+    public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();    
     public Task<IEnumerable<SecureScore>> GetSecureScores();
-    public Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails();
-    public Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userPrincipalName);
+    public Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails();    
     public Task<Microsoft.Graph.ContactFolder> EnsureContactFolder(string userId, string name);
     public Task<IEnumerable<Contact>> GetContactFolder(string userId, string name, string reference);
     public Task<Contact> CreateContact(string userId, string folderId, Contact contact);
@@ -127,13 +123,6 @@ public class MicrosoftService : IMicrosoftService
     public async Task<byte[]> DownloadFile(string url)
     {
         return new List<byte>().ToArray();
-    }
-
-    public async Task<IEnumerable<Device>> GetDevicesByUser(string userId)
-    {
-        var items = await this.GetDevices();
-
-        return items.Where(t => t.RegisteredOwners.Any(t => t.Id == userId));
     }
 
     public async Task<IEnumerable<User>> GetMembers()
@@ -343,29 +332,6 @@ public class MicrosoftService : IMicrosoftService
        .GetAsync();
 
         return await _graphServiceClient.PagedRequest<Microsoft.Graph.Alert>(items, 100);
-    }
-
-    public async Task<IEnumerable<Alert>> GetSecurityAlertsByUser(string userPrincipalName)
-    {
-        var items = await this._graphServiceClient.Security.Alerts
-       .Request()
-       .Top(100)
-       .GetAsync();
-
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.Alert>(items, 100);
-
-        return allItems
-            .Where(t => t.UserStates.Any(y => y.UserPrincipalName == userPrincipalName));
-    }
-
-    public async Task<UserRegistrationDetails?> GetUserRegistrationDetailsByUser(string userPrincipalName)
-    {
-        var iterator = await this._graphServiceClient.Reports.AuthenticationMethods.UserRegistrationDetails.Request()
-        .Filter(string.Format("userPrincipalName eq '{0}'", userPrincipalName))
-        .Top(1)
-        .GetAsync();
-
-        return iterator.FirstOrDefault();
     }
 
     public async Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails()

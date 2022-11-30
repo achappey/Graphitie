@@ -1,6 +1,6 @@
 namespace Graphitie.Models;
 
-public class UserRegistrationDetails 
+public class UserRegistrationDetails
 {
     public string Id { get; set; } = string.Empty;
 

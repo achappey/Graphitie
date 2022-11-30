@@ -6,7 +6,6 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize(Roles = ("Administrators"))]
 public class TeamsTabController : ControllerBase
 {
     private readonly ILogger<TeamsTabController> _logger;

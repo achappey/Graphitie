@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 
@@ -10,7 +9,6 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-[Authorize(Roles = ("Administrators"))]
 public class DevicesController : ControllerBase
 {
     private readonly ILogger<DevicesController> _logger;
@@ -30,10 +28,5 @@ public class DevicesController : ControllerBase
         return await _graphitieService.GetDevices();
     }
 
-    [HttpDelete("{id}", Name = "DeleteDevice")]
-    public IActionResult Delete(string id)
-    {
-        return Ok();
-    }
 
 }

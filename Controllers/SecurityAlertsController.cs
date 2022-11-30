@@ -1,5 +1,3 @@
-
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 
@@ -11,7 +9,6 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-[Authorize(Roles = ("Administrators"))]
 public class SecurityAlertsController : ControllerBase
 {
     private readonly ILogger<SecurityAlertsController> _logger;

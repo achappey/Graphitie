@@ -7,13 +7,9 @@ using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
 using Graphitie.Services;
-using Graphitie.Connectors.WakaTime;
 using Graphitie;
 
-using Octokit;
 
 var odataEndpoint = "odata";
 var version = "v1";
@@ -36,18 +32,12 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddAutoMapper(
-          typeof(Graphitie.Profiles.Microsoft.MicrosoftProfile),
-          typeof(Graphitie.Profiles.WakaTime.WakaTimeProfile),
-          typeof(Graphitie.Profiles.GitHub.GitHubProfile)
+          typeof(Graphitie.Profiles.Microsoft.MicrosoftProfile)
       );
-
-builder.Services.AddScoped<IClaimsTransformation, AddRolesClaimsTransformation>();
 
 builder.Services.AddScoped<GraphitieService>();
 builder.Services.AddScoped<MicrosoftService>();
 builder.Services.AddSingleton<KeyVaultService>();
-builder.Services.AddSingleton<WakaTime>();
-builder.Services.AddSingleton<GitHubClient>(new GitHubClient(new ProductHeaderValue(appConfig.NameSpace)));
 
 builder.Services.AddHttpClient();
 
@@ -89,9 +79,6 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
@@ -112,38 +99,4 @@ static IEdmModel GetGraphModel(string name)
     builder.Namespace = name;
 
     return builder.GetEdmModel();
-}
-
-public class AddRolesClaimsTransformation : IClaimsTransformation
-{
-    private readonly ILogger<AddRolesClaimsTransformation> _logger;
-
-    public AddRolesClaimsTransformation(ILogger<AddRolesClaimsTransformation> logger)
-    {
-        _logger = logger;
-    }
-
-    public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
-    {
-        var mappedRolesClaims = principal.Claims
-            .Where(claim => claim.Type == "roles")
-            .Select(claim => new Claim(ClaimTypes.Role, claim.Value))
-            .ToList();
-
-        // Clone current identity
-        var clone = principal.Clone();
-
-        if (clone.Identity is not ClaimsIdentity newIdentity) return Task.FromResult(principal);
-
-        // Add role claims to cloned identity
-        foreach (var mappedRoleClaim in mappedRolesClaims)
-            newIdentity.AddClaim(mappedRoleClaim);
-
-        if (mappedRolesClaims.Count > 0)
-            _logger.LogInformation("Added roles claims {mappedRolesClaims}", mappedRolesClaims);
-        else
-            _logger.LogInformation("No roles claims added");
-
-        return Task.FromResult(clone);
-    }
 }

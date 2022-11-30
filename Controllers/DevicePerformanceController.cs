@@ -10,7 +10,6 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-[Authorize(Roles = ("Administrators"))]
 public class DevicePerformanceController : ControllerBase
 {
     private readonly ILogger<DevicePerformanceController> _logger;

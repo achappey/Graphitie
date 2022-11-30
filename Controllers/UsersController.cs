@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Graphitie.Models;
@@ -8,7 +7,6 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-//[Authorize(Roles = ("Administrators"))]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class UsersController : ControllerBase
 {
