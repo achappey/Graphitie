@@ -7,7 +7,7 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize(Roles = ("Administrators"))]
+//[Authorize(Roles = ("Administrators"))]
 public class EmailController : ControllerBase
 {
     private readonly ILogger<EmailController> _logger;

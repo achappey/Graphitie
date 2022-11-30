@@ -8,7 +8,7 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize(Roles = ("Administrators"))]
+//[Authorize(Roles = ("Administrators"))]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class UsersController : ControllerBase
 {
