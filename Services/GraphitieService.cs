@@ -9,7 +9,7 @@ public interface IGraphitieService
     public Task<IEnumerable<User>> GetUsers();
     public Task<IEnumerable<User>> GetMembers();
     public Task<IEnumerable<Employee>> GetEmployees();
-    public Task<IEnumerable<Group>> GetGroups();    
+    public Task<IEnumerable<Group>> GetGroups();
     public Task AddOwner(string siteId, string userId);
     public Task DeleteOwner(string siteId, string userId);
     public Task SendEmail(string user, string sender, string recipient, string subject, string html);
@@ -25,18 +25,18 @@ public class GraphitieService : IGraphitieService
 {
     private readonly Microsoft.Graph.GraphServiceClient _graphServiceClient;
     private readonly KeyVaultService _keyVaultService;
-    private readonly IMicrosoftService _microsoftService;   
+    private readonly IMicrosoftService _microsoftService;
     private readonly IMapper _mapper;
-   
+
     public GraphitieService(Microsoft.Graph.GraphServiceClient graphServiceClient,
     KeyVaultService keyVaultService,
     IMapper mapper,
     MicrosoftService microsoftService)
     {
         _graphServiceClient = graphServiceClient;
-        _keyVaultService = keyVaultService;    
+        _keyVaultService = keyVaultService;
         _microsoftService = microsoftService;
-        _mapper = mapper;   
+        _mapper = mapper;
     }
 
 
@@ -119,7 +119,6 @@ public class GraphitieService : IGraphitieService
 
     public async Task<int> CopyMemberContacts(string userId, string folderName, string? birthdaySiteId = null)
     {
-
         var graphUser = await _microsoftService.GetUserById(userId);
 
         if (string.IsNullOrEmpty(graphUser?.Mail))
@@ -131,51 +130,28 @@ public class GraphitieService : IGraphitieService
 
         if (!string.IsNullOrEmpty(birthdaySiteId))
         {
-            var birthdayEvents = await _microsoftService.GetEvents(birthdaySiteId);
-
-            birthdays = birthdayEvents.ToBirthdays();
+            birthdays = (await _microsoftService.GetEvents(birthdaySiteId)).ToBirthdays();
         }
 
-        var users = await _microsoftService.GetMembers();
-
-        users = users
-        .Where(y => !string.IsNullOrEmpty(y.GivenName))
-        .Where(y => !string.IsNullOrEmpty(y.Department))
-        .Where(y => !string.IsNullOrEmpty(y.Mail))
-         .Select(v => v.WithBirthday(birthdays))
-        .Where(y => y.Id != userId);
+        var users = (await _microsoftService.GetMembers())
+            .Where(y => !string.IsNullOrEmpty(y.GivenName) && !string.IsNullOrEmpty(y.Department) && !string.IsNullOrEmpty(y.Mail))
+            .Select(v => v.WithBirthday(birthdays))
+            .Where(y => y.Id != userId);
 
         var contactFolder = await _microsoftService.EnsureContactFolder(userId, folderName);
         var folderContacts = await _microsoftService.GetContactFolder(userId, contactFolder.Id, GraphConstants.SYNC_REFERENCE);
 
-        var createContacts = users
-                .Where(v => folderContacts.All(u => v.Id != u.ToReferenceId()));
+        var createContacts = users.Where(v => folderContacts.All(u => v.Id != u.ToReferenceId()));
+        var updateContacts = users.Where(v => folderContacts.Any(u => v.Id == u.ToReferenceId() && !v.IsEqual(u)));
+        var deleteContacts = folderContacts.Where(v => users.All(u => u.Id != v.ToReferenceId()));
 
-        foreach (var userContact in createContacts)
-        {
-            await _microsoftService.CreateContact(userId, contactFolder.Id, userContact.ToContact(null));
-        }
-
-        var updateContacts = users
-                .Where(v => folderContacts.Any(u => v.Id == u.ToReferenceId()))
-                .Where(v => !v.IsEqual(folderContacts.First(u => v.Id == u.ToReferenceId())))
-                .ToDictionary(v => folderContacts.First(u => v.Id == u.ToReferenceId()).Id, v => v);
-
-        foreach (var userContact in updateContacts)
-        {
-            await _microsoftService.UpdateContact(userId, contactFolder.Id, userContact.Value.ToContact(userContact.Key));
-        }
-
-        var deleteContacts = folderContacts
-                .Where(v => users.All(u => u.Id != v.ToReferenceId()));
-
-        foreach (var current in deleteContacts)
-        {
-            await _microsoftService.DeleteContact(userId, contactFolder.Id, current.Id);
-        }
+        await Task.WhenAll(createContacts.Select(async v => await _microsoftService.CreateContact(userId, contactFolder.Id, v.ToContact(null))));
+        await Task.WhenAll(updateContacts.Select(async v => await _microsoftService.UpdateContact(userId, contactFolder.Id, v.ToContact(folderContacts.First(u => u.Id == v.Id).Id))));
+        await Task.WhenAll(deleteContacts.Select(async v => await _microsoftService.DeleteContact(userId, contactFolder.Id, v.Id)));
 
         return users.Count();
     }
+
 
     public async Task AddContacts(string userId, string folderName)
     {

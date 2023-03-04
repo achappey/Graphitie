@@ -14,7 +14,7 @@ public interface IMicrosoftService
     public Task<IEnumerable<Group>> GetGroups();
     public Task<IEnumerable<SubscribedSku>> GetLicenses();
     public Task<IEnumerable<ManagedDevice>> GetManagedDevices();
-    public Task<IEnumerable<SignIn>> GetSignIns();
+    public Task<IEnumerable<SignIn>> GetSignIns(int days = 4, int pageSize = 999, int delay = 500);
     public Task SendEmail(string user, string from, string to, string subject, string html);
     public Task AddGroupOwner(string siteId, string userId);   
     public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
@@ -154,7 +154,6 @@ public class MicrosoftService : IMicrosoftService
     {
         var items = await _graphServiceClient.Groups
         .Request()
-       // .Top(500)
         .GetAsync();
 
         return await _graphServiceClient.PagedRequest<Group>(items, 500, 500);
@@ -345,20 +344,23 @@ public class MicrosoftService : IMicrosoftService
 
     public async Task<IEnumerable<SignIn>> GetSignInsByUser(string userId)
     {
+      
         return await this._graphServiceClient.AuditLogs.SignIns.Request()
         .Filter(string.Format("userId eq '{0}'", userId))
         .Top(999)
         .GetAsync();
     }
 
-    public async Task<IEnumerable<SignIn>> GetSignIns()
+    public async Task<IEnumerable<SignIn>> GetSignIns(int days = 4, int pageSize = 999, int delay = 500)
     {
+        var filter = $"createdDateTime ge {DateTime.UtcNow.AddDays(-days).Date:yyyy-MM-ddTHH:mm:ssZ}";
+
         var iterator = await this._graphServiceClient.AuditLogs.SignIns.Request()
-        .Filter(string.Format("createdDateTime ge {0}", DateTime.UtcNow.AddDays(-4).Date.ToString("yyyy-MM-ddTHH:mm:ssZ")))
-        .Top(999)
+        .Filter(filter)
+        .Top(pageSize)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<SignIn>(iterator, 999, 500);
+        return await _graphServiceClient.PagedRequest<SignIn>(iterator, pageSize, delay);
     }
 
 
