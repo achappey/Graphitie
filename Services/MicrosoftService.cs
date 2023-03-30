@@ -251,7 +251,7 @@ public class MicrosoftService : IMicrosoftService
         {
             EmailAddress = new EmailAddress { Address = userPermission },
             IsInsideOrganization = true,
-            Role = CalendarRoleType.DelegateWithoutPrivateEventAccess
+            Role = CalendarRoleType.Write
         };
 
         await this._graphServiceClient.Users[addPermissionToUser].Calendar.CalendarPermissions.Request().AddAsync(newPermission);
