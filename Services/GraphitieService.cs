@@ -185,6 +185,11 @@ public class GraphitieService : IGraphitieService
         return items.Select(t => this._mapper.Map<SecurityAlert>(t));
     }
 
+    public async Task AddCalendarPermisson(string addPermissionToUser, string userPermission)
+    {
+        await this._microsoftService.AddCalendarPermisson(addPermissionToUser, userPermission);
+    }
+
     public async Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails()
     {
         var items = await this._microsoftService.GetUserRegistrationDetails();

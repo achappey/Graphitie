@@ -8,6 +8,9 @@ public class SignIn
     public string? UserPrincipalName { get; set; }
     public SignInLocation? Location { get; set; }
     public SignInStatus? Status { get; set; }
+    public string? IpAddress { get; set; }
+
+    
 
 }
 
