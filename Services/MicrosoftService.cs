@@ -9,18 +9,19 @@ public interface IMicrosoftService
     public Task<User?> GetUserByEmail(string email);
     public Task<User?> GetUserById(string id);
     public Task<IEnumerable<User>> GetMembers();
-    public Task<IEnumerable<Alert>> GetSecurityAlerts();   
+    public Task<IEnumerable<Alert>> GetSecurityAlerts();
     public Task<IEnumerable<Device>> GetDevices();
     public Task<IEnumerable<Group>> GetGroups();
     public Task<IEnumerable<SubscribedSku>> GetLicenses();
     public Task<IEnumerable<ManagedDevice>> GetManagedDevices();
     public Task<IEnumerable<SignIn>> GetSignIns(int days = 4, int pageSize = 999, int delay = 500);
     public Task SendEmail(string user, string from, string to, string subject, string html);
-    public Task AddGroupOwner(string siteId, string userId);   
+    public Task AddGroupOwner(string siteId, string userId);
     public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
-    public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();    
+    public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();
+    public Task AddCalendarPermisson(string addPermissionToUser, string userPermission);
     public Task<IEnumerable<SecureScore>> GetSecureScores();
-    public Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails();    
+    public Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails();
     public Task<Microsoft.Graph.ContactFolder> EnsureContactFolder(string userId, string name);
     public Task<IEnumerable<Contact>> GetContactFolder(string userId, string name, string reference);
     public Task<Contact> CreateContact(string userId, string folderId, Contact contact);
@@ -150,7 +151,7 @@ public class MicrosoftService : IMicrosoftService
         return await _graphServiceClient.PagedRequest<User>(items, 500, 500);
     }
 
- public async Task<IEnumerable<Group>> GetGroups()
+    public async Task<IEnumerable<Group>> GetGroups()
     {
         var items = await _graphServiceClient.Groups
         .Request()
@@ -178,6 +179,7 @@ public class MicrosoftService : IMicrosoftService
     {
         return await this.GetGraphUsers();
     }
+
 
     public async Task AddGroupOwner(string siteId, string userId)
     {
@@ -243,12 +245,24 @@ public class MicrosoftService : IMicrosoftService
         .PostAsync();
     }
 
+    public async Task AddCalendarPermisson(string addPermissionToUser, string userPermission)
+    {
+        CalendarPermission newPermission = new CalendarPermission
+        {
+            EmailAddress = new EmailAddress { Address = userPermission },
+            IsInsideOrganization = true,
+            Role = CalendarRoleType.DelegateWithoutPrivateEventAccess
+        };
+
+        await this._graphServiceClient.Users[addPermissionToUser].Calendar.CalendarPermissions.Request().AddAsync(newPermission);
+    }
+
     public async Task<IEnumerable<SubscribedSku>> GetLicenses()
     {
         var items = await this._graphServiceClient.SubscribedSkus
               .Request()
               .GetAsync();
-              
+
         return items;
     }
 
@@ -344,7 +358,7 @@ public class MicrosoftService : IMicrosoftService
 
     public async Task<IEnumerable<SignIn>> GetSignInsByUser(string userId)
     {
-      
+
         return await this._graphServiceClient.AuditLogs.SignIns.Request()
         .Filter(string.Format("userId eq '{0}'", userId))
         .Top(999)
