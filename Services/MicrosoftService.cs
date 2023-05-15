@@ -43,30 +43,48 @@ public class MicrosoftService : IMicrosoftService
     {
         _graphServiceClient = graphServiceClient;
     }
-
+    
     public async Task AddTab(string siteId, string name, string url)
     {
-        var channels = await this._graphServiceClient.Teams[siteId].AllChannels
-        .Request()
-        .GetAsync();
-
-        var channel = channels.First(a => a.DisplayName == "General");
-
-        var group = await this._graphServiceClient.Teams[siteId]
-        .Channels[channel.Id]
-        .Tabs
-        .Request()
-        .AddAsync(new TeamsTab()
+        try
         {
-            TeamsAppId = "com.microsoft.teamspace.tab.web",
-            DisplayName = name,
-            Configuration = new TeamsTabConfiguration()
-            {
-                WebsiteUrl = url,
-                ContentUrl = url
-            }
-        });
+            // Get all channels for the specified team
+            var allChannels = await _graphServiceClient.Teams[siteId].AllChannels
+                .Request()
+                .GetAsync();
 
+            // Find the General channel
+            var generalChannel = allChannels.FirstOrDefault(a => a.DisplayName == "General");
+
+            // Check if the General channel is found
+            if (generalChannel == null)
+            {
+                throw new InvalidOperationException("General channel not found in the specified team.");
+            }
+
+            // Create a new TeamsTab instance
+            var newTab = new TeamsTab()
+            {
+                TeamsAppId = "com.microsoft.teamspace.tab.web",
+                DisplayName = name,
+                Configuration = new TeamsTabConfiguration()
+                {
+                    WebsiteUrl = url,
+                    ContentUrl = url
+                }
+            };
+
+            // Add the new tab to the General channel
+            await _graphServiceClient.Teams[siteId]
+                .Channels[generalChannel.Id]
+                .Tabs
+                .Request()
+                .AddAsync(newTab);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Failed to add the tab to the specified team.", ex);
+        }
     }
 
 

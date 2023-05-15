@@ -60,25 +60,26 @@ public static class GraphExtensions
         .GetAsync();
     }
 
-
     public static async Task<IEnumerable<ListItem>> GetEvents(this GraphServiceClient client, string siteId, string listId)
     {
-        List<Microsoft.Graph.QueryOption> options = new List<Microsoft.Graph.QueryOption>
-        {
-                new Microsoft.Graph.QueryOption("expand", "fields(select=EventDate,Category,ParticipantsPicker)")
-        };
+        // Create a list of QueryOption objects for expanding specific fields
+        var queryOptions = new List<Microsoft.Graph.QueryOption>
+    {
+        new Microsoft.Graph.QueryOption("expand", "fields(select=EventDate,Category,ParticipantsPicker)")
+    };
 
+        // Fetch and return the list items with the specified query options
         return await client.Sites[siteId]
-        .Lists[listId]
-        .Items
-        .Request(options)
-        .GetAsync();
+            .Lists[listId]
+            .Items
+            .Request(queryOptions)
+            .GetAsync();
     }
 
     public static Contact ToContact(this User user, string? id)
     {
+        // Create a list of Phone objects for MobilePhone and BusinessPhones
         var phones = new List<Phone>();
-
         if (!string.IsNullOrEmpty(user.MobilePhone))
         {
             phones.Add(new Phone()
@@ -88,25 +89,26 @@ public static class GraphExtensions
             });
         }
 
-        if (user.BusinessPhones != null && user.BusinessPhones.Count() > 0)
+        if (user.BusinessPhones != null && user.BusinessPhones.Any())
         {
-            phones.AddRange(user.BusinessPhones.Select(z => new Phone()
+            phones.AddRange(user.BusinessPhones.Select(phone => new Phone()
             {
-                Number = z,
+                Number = phone,
                 Type = PhoneType.Business
             }));
         }
 
-        var email = new List<TypedEmailAddress>();
-
+        // Create a list of TypedEmailAddress objects for user Mail
+        var emailAddresses = new List<TypedEmailAddress>();
         if (!string.IsNullOrEmpty(user.Mail))
         {
-            email.Add(new TypedEmailAddress()
+            emailAddresses.Add(new TypedEmailAddress()
             {
                 Address = user.Mail
             });
         }
 
+        // Create and return a Contact object
         return new Contact()
         {
             DisplayName = user.DisplayName,
@@ -118,22 +120,22 @@ public static class GraphExtensions
             Surname = user.Surname,
             Phones = phones,
             JobTitle = user.JobTitle,
-            EmailAddresses = email,
+            EmailAddresses = emailAddresses,
             Extensions = new Microsoft.Graph.ContactExtensionsCollectionPage
+        {
+            new Microsoft.Graph.OpenTypeExtension()
             {
-                new Microsoft.Graph.OpenTypeExtension()
+                ODataType = "microsoft.graph.openTypeExtension",
+                ExtensionName = GraphConstants.SYNC_REFERENCE,
+                AdditionalData = new Dictionary<string, object>()
                 {
-                    ODataType = "microsoft.graph.openTypeExtension",
-                    ExtensionName = GraphConstants.SYNC_REFERENCE,
-                    AdditionalData = new Dictionary<string, object>()
-                    {
-                        { GraphConstants.CONTACT_REFERENCE, user.Id }
-                    }
+                    { GraphConstants.CONTACT_REFERENCE, user.Id }
                 }
             }
+        }
         };
-
     }
+
 
     public static string? ToReferenceId(this Contact contact)
     {
@@ -235,35 +237,45 @@ public static class GraphExtensions
         return contactFolder;
     }
 
-    public static async Task<IEnumerable<T>> PagedRequest<T>(this GraphServiceClient client, ICollectionPage<T> page, int pauseAfter = 200, int delay = 1500)
+    public static async Task<IEnumerable<T>> PagedRequest<T>(
+     this GraphServiceClient client,
+     ICollectionPage<T> page,
+     int pauseAfter = 200,
+     int delay = 1500)
     {
         List<T> result = new List<T>();
 
+        // Counter to keep track of the number of items processed
         int count = 0;
 
-        var pageIterator = PageIterator<T>
-            .CreatePageIterator(
-                client,
-                page,
-                (m) =>
-                {
-                    count++;
-                    result.Add(m);
+        // Create a page iterator for the specified page
+        var pageIterator = PageIterator<T>.CreatePageIterator(
+            client,
+            page,
+            (item) =>
+            {
+                count++;
+                result.Add(item);
 
-                    return count < pauseAfter;
-                }
-            );
+                // Continue processing items until the pause limit is reached
+                return count < pauseAfter;
+            });
 
+        // Iterate through the items on the current page
         await pageIterator.IterateAsync();
 
+        // Continue processing pages until the iterator is complete
         while (pageIterator.State != PagingState.Complete)
         {
+            // Pause for the specified delay time
             await Task.Delay(delay);
+
+            // Reset the counter and resume processing
             count = 0;
             await pageIterator.ResumeAsync();
         }
 
         return result;
-
     }
+
 }
