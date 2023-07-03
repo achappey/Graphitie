@@ -21,6 +21,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet(Name = "GetUsers")]
+    [Produces("application/json")] 
     [EnableQuery]
     public async Task<IEnumerable<User>> Get()
     {

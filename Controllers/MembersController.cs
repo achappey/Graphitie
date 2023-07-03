@@ -20,6 +20,7 @@ public class MembersController : ControllerBase
     }
 
     [HttpGet(Name = "GetMembers")]
+    [Produces("application/json")] 
     [EnableQuery]
     public async Task<IEnumerable<User>> Get()
     {

@@ -12,10 +12,13 @@ public interface IMicrosoftService
     public Task<IEnumerable<Alert>> GetSecurityAlerts();
     public Task<IEnumerable<Device>> GetDevices();
     public Task<IEnumerable<Group>> GetGroups();
+    public Task<Microsoft.Graph.Event> AddCalenderEvent(string user, Microsoft.Graph.Event _event);
     public Task<IEnumerable<SubscribedSku>> GetLicenses();
     public Task<IEnumerable<ManagedDevice>> GetManagedDevices();
+    public Task SendMail(string user, Message message);
     public Task<IEnumerable<SignIn>> GetSignIns(int days = 4, int pageSize = 999, int delay = 500);
     public Task SendEmail(string user, string from, string to, string subject, string html);
+public Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, string toDate, string from = null, string subject = null);
     public Task AddGroupOwner(string siteId, string userId);
     public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
     public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();
@@ -43,7 +46,7 @@ public class MicrosoftService : IMicrosoftService
     {
         _graphServiceClient = graphServiceClient;
     }
-    
+
     public async Task AddTab(string siteId, string name, string url)
     {
         try
@@ -158,6 +161,16 @@ public class MicrosoftService : IMicrosoftService
         .Where(r => !string.IsNullOrEmpty(r.Mail));
     }
 
+
+    public async Task<Microsoft.Graph.Event> AddCalenderEvent(string user, Microsoft.Graph.Event _event)
+    {
+        return await _graphServiceClient.Users[user]
+        .Calendar.Events
+        .Request()
+        .AddAsync(_event);
+
+    }
+
     private async Task<IEnumerable<User>> GetGraphUsers(string filter = "")
     {
         var items = await _graphServiceClient.Users
@@ -198,7 +211,6 @@ public class MicrosoftService : IMicrosoftService
         return await this.GetGraphUsers();
     }
 
-
     public async Task AddGroupOwner(string siteId, string userId)
     {
         var directoryObject = new DirectoryObject
@@ -227,6 +239,13 @@ public class MicrosoftService : IMicrosoftService
             .DeleteAsync();
     }
 
+    public async Task SendMail(string user, Message message)
+    {
+        await this._graphServiceClient.Users[user]
+        .SendMail(message)
+        .Request()
+        .PostAsync();
+    }
 
     public async Task SendEmail(string user, string from, string to, string subject, string html)
     {
@@ -240,6 +259,7 @@ public class MicrosoftService : IMicrosoftService
                     Address = from
                 }
             },
+            
             ToRecipients = new List<Recipient>()
             {
                 new Microsoft.Graph.Recipient
@@ -262,6 +282,29 @@ public class MicrosoftService : IMicrosoftService
         .Request()
         .PostAsync();
     }
+
+    public async Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, string toDate, string from = null, string subject = null)
+    {
+        string filter = $"receivedDateTime ge {fromDate} and receivedDateTime le {toDate}";
+
+        if (!string.IsNullOrWhiteSpace(from))
+        {
+            filter += $" and from/emailAddress/address eq '{from}'";
+        }
+        if (!string.IsNullOrWhiteSpace(subject))
+        {
+            filter += $" and contains(subject, '{subject}')";
+        }
+
+        return await this._graphServiceClient.Users[user]
+            .MailFolders.Inbox.Messages
+            .Request()
+            .Filter(filter)
+            .OrderBy("receivedDateTime DESC")
+            .GetAsync();
+    }
+
+
 
     public async Task AddCalendarPermisson(string addPermissionToUser, string userPermission)
     {

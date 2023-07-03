@@ -22,6 +22,7 @@ public class SecurityAlertsController : ControllerBase
     }
 
     [HttpGet(Name = "GetSecurityAlerts")]
+    [Produces("application/json")] 
     [EnableQuery]
     public async Task<IEnumerable<SecurityAlert>> Get()
     {

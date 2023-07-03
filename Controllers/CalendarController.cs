@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Graphitie.Services;
+using Graph = Microsoft.Graph;
+using Graphitie.Models;
 
 namespace Graphitie.Controllers.Microsoft;
 
@@ -21,6 +23,14 @@ public class CalendarController : ControllerBase
     public async Task AddCalendarDelegate(string userCalendar, string userDelegate)
     {
         await _graphitieService.AddCalendarPermisson(userCalendar, userDelegate);
+
+    }
+
+    [HttpPost(Name = "AddCalendarEvent")] 
+    [Produces("application/json")] 
+    public async Task<CalendarEvent> AddCalendarEvent(string userCalendar, [FromBody] CalendarEvent userDelegate)
+    {
+        return await _graphitieService.AddCalendarEvent(userCalendar, userDelegate);
 
     }
 }

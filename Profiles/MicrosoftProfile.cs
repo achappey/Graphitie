@@ -17,6 +17,22 @@ public class MicrosoftProfile : AutoMapper.Profile
         CreateMap<SignInStatus, Graphitie.Models.SignInStatus>();
         CreateMap<UserRegistrationDetails, Graphitie.Models.UserRegistrationDetails>();
 
+        CreateMap<Graphitie.Models.CalendarEvent, Event>();
+        CreateMap<Graphitie.Models.EventAttendee, Attendee>();
+        CreateMap<Graphitie.Models.EmailAddress, EmailAddress>();
+        CreateMap<Graphitie.Models.EventDateTime, DateTimeTimeZone>();
+        CreateMap<Graphitie.Models.ItemBody, ItemBody>();
+        CreateMap<Graphitie.Models.Mail, Message>();
+        CreateMap<Graphitie.Models.Recipient, Recipient>();
+
+CreateMap<Message, Graphitie.Models.Mail>();
+CreateMap<Recipient, Graphitie.Models.Recipient>();
+        CreateMap<Event, Graphitie.Models.CalendarEvent>();
+        CreateMap<Attendee, Graphitie.Models.EventAttendee>();
+        CreateMap<EmailAddress, Graphitie.Models.EmailAddress>();
+        CreateMap<DateTimeTimeZone, Graphitie.Models.EventDateTime>();
+        CreateMap<ItemBody, Graphitie.Models.ItemBody>();
+
         CreateMap<SubscribedSku, Graphitie.Models.License>()
         .ForMember(t => t.EnabledUnits, f => f.MapFrom(y => y.PrepaidUnits.Enabled));
 

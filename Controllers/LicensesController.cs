@@ -21,6 +21,7 @@ public class LicensesController : ControllerBase
     }
 
     [HttpGet(Name = "GetLicences")]
+    [Produces("application/json")] 
     [EnableQuery]
     public async Task<IEnumerable<License>> Get()
     {

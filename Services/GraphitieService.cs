@@ -39,11 +39,19 @@ public class GraphitieService : IGraphitieService
         _mapper = mapper;
     }
 
-
+    public async Task SearchEmail(string user, string sender, string subject, string fromDate, string toDate)
+    {
+        var items = await this._microsoftService.SearchEmail(user, fromDate, toDate, sender, subject);
+    }
 
     public async Task SendEmail(string user, string sender, string recipient, string subject, string html)
     {
         await this._microsoftService.SendEmail(user, sender, recipient, subject, html);
+    }
+
+    public async Task SendMail(string user, Mail mail)
+    {
+        await this._microsoftService.SendMail(user, this._mapper.Map<Microsoft.Graph.Message>(mail));
     }
 
     public async Task AddTab(string siteId, string name, string url)
@@ -188,6 +196,13 @@ public class GraphitieService : IGraphitieService
     public async Task AddCalendarPermisson(string addPermissionToUser, string userPermission)
     {
         await this._microsoftService.AddCalendarPermisson(addPermissionToUser, userPermission);
+    }
+
+    public async Task<CalendarEvent> AddCalendarEvent(string addPermissionToUser, CalendarEvent _event)
+    {
+        var item = await this._microsoftService.AddCalenderEvent(addPermissionToUser, this._mapper.Map<Microsoft.Graph.Event>(_event));
+
+        return this._mapper.Map<CalendarEvent>(item);
     }
 
     public async Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails()

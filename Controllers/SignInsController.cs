@@ -22,6 +22,7 @@ public class SignInsController : ControllerBase
     }
 
     [HttpGet(Name = "GetSignIns")]
+    [Produces("application/json")] 
     [EnableQuery]
     public async Task<IEnumerable<SignIn>> Get()
     {
