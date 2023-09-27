@@ -39,62 +39,58 @@ public class GraphitieService : IGraphitieService
         _mapper = mapper;
     }
 
-    public async Task SearchEmail(string user, string sender, string subject, string fromDate, string toDate)
-    {
-        var items = await this._microsoftService.SearchEmail(user, fromDate, toDate, sender, subject);
-    }
 
     public async Task SendEmail(string user, string sender, string recipient, string subject, string html)
     {
-        await this._microsoftService.SendEmail(user, sender, recipient, subject, html);
+        await _microsoftService.SendEmail(user, sender, recipient, subject, html);
     }
 
     public async Task SendMail(string user, Mail mail)
     {
-        await this._microsoftService.SendMail(user, this._mapper.Map<Microsoft.Graph.Message>(mail));
+        await _microsoftService.SendMail(user, _mapper.Map<Microsoft.Graph.Message>(mail));
     }
 
     public async Task AddTab(string siteId, string name, string url)
     {
-        await this._microsoftService.AddTab(siteId, name, url);
+        await _microsoftService.AddTab(siteId, name, url);
     }
 
     public async Task RenameGroup(string siteId, string name)
     {
-        await this._microsoftService.RenameGroup(siteId, name);
+        await _microsoftService.RenameGroup(siteId, name);
     }
 
     public async Task AddOwner(string siteId, string userId)
     {
-        await this._microsoftService.AddGroupOwner(siteId, userId);
+        await _microsoftService.AddGroupOwner(siteId, userId);
     }
 
     public async Task DeleteMember(string siteId, string userId)
     {
-        await this._microsoftService.DeleteGroupMember(siteId, userId);
+        await _microsoftService.DeleteGroupMember(siteId, userId);
     }
     public async Task DeleteOwner(string siteId, string userId)
     {
-        await this._microsoftService.DeleteGroupOwner(siteId, userId);
+        await _microsoftService.DeleteGroupOwner(siteId, userId);
     }
 
     public async Task<IEnumerable<Device>> GetDevices()
     {
-        var items = await this._microsoftService.GetDevices();
+        var items = await _microsoftService.GetDevices();
 
-        return await WithManagedDevices(items.Select(t => this._mapper.Map<Device>(t)));
+        return await WithManagedDevices(items.Select(_mapper.Map<Device>));
     }
 
     public async Task<IEnumerable<License>> GetLicenses()
     {
-        var items = await this._microsoftService.GetLicenses();
+        var items = await _microsoftService.GetLicenses();
 
-        return items.Select(t => this._mapper.Map<License>(t));
+        return items.Select(_mapper.Map<License>);
     }
 
     private async Task<IEnumerable<Device>> WithManagedDevices(IEnumerable<Device> devices)
     {
-        var managedDevices = await this._microsoftService.GetManagedDevices();
+        var managedDevices = await _microsoftService.GetManagedDevices();
 
         return devices
             .Select(t => t
@@ -105,24 +101,24 @@ public class GraphitieService : IGraphitieService
 
     public async Task<IEnumerable<User>> GetMembers()
     {
-        var items = await this._microsoftService.GetMembers();
+        var items = await _microsoftService.GetMembers();
 
-        return items.Select(t => this._mapper.Map<User>(t));
+        return items.Select(_mapper.Map<User>);
     }
 
 
     public async Task<IEnumerable<User>> GetUsers()
     {
-        var items = await this._microsoftService.GetUsers();
+        var items = await _microsoftService.GetUsers();
 
-        return items.Select(t => this._mapper.Map<User>(t));
+        return items.Select(_mapper.Map<User>);
     }
 
     public async Task<IEnumerable<Group>> GetGroups()
     {
-        var items = await this._microsoftService.GetGroups();
+        var items = await _microsoftService.GetGroups();
 
-        return items.Select(t => this._mapper.Map<Group>(t));
+        return items.Select(_mapper.Map<Group>);
     }
 
     public async Task<int> CopyMemberContacts(string userId, string folderName, string? birthdaySiteId = null)
@@ -167,56 +163,56 @@ public class GraphitieService : IGraphitieService
 
     public async Task<IEnumerable<Employee>> GetEmployees()
     {
-        var items = await this._microsoftService.GetMembers();
+        var items = await _microsoftService.GetMembers();
 
-        return items.Select(t => this._mapper.Map<Employee>(t));
+        return items.Select(t => _mapper.Map<Employee>(t));
     }
 
     public async Task<IEnumerable<DevicePerformance>> GetDevicePerformance()
     {
-        var items = await this._microsoftService.GetDevicePerformance();
-        return items.Select(t => this._mapper.Map<DevicePerformance>(t));
+        var items = await _microsoftService.GetDevicePerformance();
+        return items.Select(_mapper.Map<DevicePerformance>);
     }
 
 
     public async Task<IEnumerable<SecureScore>> GetSecureScores()
     {
-        var items = await this._microsoftService.GetSecureScores();
+        var items = await _microsoftService.GetSecureScores();
 
-        return items.Select(t => this._mapper.Map<SecureScore>(t));
+        return items.Select(_mapper.Map<SecureScore>);
     }
 
     public async Task<IEnumerable<SecurityAlert>> GetSecurityAlerts()
     {
-        var items = await this._microsoftService.GetSecurityAlerts();
+        var items = await _microsoftService.GetSecurityAlerts();
 
-        return items.Select(t => this._mapper.Map<SecurityAlert>(t));
+        return items.Select(_mapper.Map<SecurityAlert>);
     }
 
     public async Task AddCalendarPermisson(string addPermissionToUser, string userPermission)
     {
-        await this._microsoftService.AddCalendarPermisson(addPermissionToUser, userPermission);
+        await _microsoftService.AddCalendarPermisson(addPermissionToUser, userPermission);
     }
 
     public async Task<CalendarEvent> AddCalendarEvent(string addPermissionToUser, CalendarEvent _event)
     {
-        var item = await this._microsoftService.AddCalenderEvent(addPermissionToUser, this._mapper.Map<Microsoft.Graph.Event>(_event));
+        var item = await _microsoftService.AddCalenderEvent(addPermissionToUser, _mapper.Map<Microsoft.Graph.Event>(_event));
 
-        return this._mapper.Map<CalendarEvent>(item);
+        return _mapper.Map<CalendarEvent>(item);
     }
 
     public async Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails()
     {
-        var items = await this._microsoftService.GetUserRegistrationDetails();
+        var items = await _microsoftService.GetUserRegistrationDetails();
 
-        return items.Select(t => this._mapper.Map<UserRegistrationDetails>(t));
+        return items.Select(_mapper.Map<UserRegistrationDetails>);
     }
 
     public async Task<IEnumerable<SignIn>> GetSignIns()
     {
-        var items = await this._microsoftService.GetSignIns();
+        var items = await _microsoftService.GetSignIns();
 
-        return items.Select(t => this._mapper.Map<SignIn>(t));
+        return items.Select(_mapper.Map<SignIn>);
     }
 
 }

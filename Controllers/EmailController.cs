@@ -18,13 +18,6 @@ public class EmailController : ControllerBase
         _graphitieService = graphitieService;
     }
 
-    [HttpGet(Name = "SearchEmail")]
-    [Produces("application/json")]
-    public async Task SearchEmail(string user, string fromDate, string toDate, string subject = null, string sender = null)
-    {
-        await _graphitieService.SearchEmail(user, sender, subject, fromDate, toDate);
-    }
-
     [HttpPut(Name = "Email")]  
     public async Task SendMail(string user, [FromBody] Mail email)
     {

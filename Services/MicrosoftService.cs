@@ -108,53 +108,48 @@ public class MicrosoftService : IMicrosoftService
 
     public async Task<ContactFolder> EnsureContactFolder(string userId, string name)
     {
-        return await this._graphServiceClient.EnsureContactFolder(userId, name);
+        return await _graphServiceClient.EnsureContactFolder(userId, name);
     }
 
     public async Task<IEnumerable<Contact>> GetContactFolder(string userId, string name, string reference)
     {
-        return await this._graphServiceClient.GetContactFolder(userId, name, reference);
+        return await _graphServiceClient.GetContactFolder(userId, name, reference);
     }
 
     public async Task<Contact> CreateContact(string userId, string folderId, Contact contact)
     {
-        return await this._graphServiceClient.CreateContact(userId, folderId, contact);
+        return await _graphServiceClient.CreateContact(userId, folderId, contact);
     }
 
     public async Task<Contact> UpdateContact(string userId, string folderId, Contact contact)
     {
-        return await this._graphServiceClient.UpdateContact(userId, folderId, contact);
+        return await _graphServiceClient.UpdateContact(userId, folderId, contact);
     }
 
     public async Task DeleteContact(string userId, string folderId, string id)
     {
-        await this._graphServiceClient.DeleteContact(userId, folderId, id);
+        await _graphServiceClient.DeleteContact(userId, folderId, id);
     }
 
     public async Task<IEnumerable<ListItem>> GetEvents(string siteId)
     {
-        var lists = await this._graphServiceClient.GetLists(siteId);
+        var lists = await _graphServiceClient.GetLists(siteId);
         var eventList = lists.FirstOrDefault(t => t.Name == "Events");
 
         if (eventList != null)
-            return await this._graphServiceClient.GetEvents(siteId, eventList.Id);
+            return await _graphServiceClient.GetEvents(siteId, eventList.Id);
 
         return new List<ListItem>();
     }
 
-    public async Task<byte[]> DownloadFile(string url)
-    {
-        return new List<byte>().ToArray();
-    }
-
     public async Task<IEnumerable<User>> GetMembers()
     {
-        return await this.GetEnabledMembers();
+        return await GetEnabledMembers();
     }
 
     private async Task<IEnumerable<User>> GetEnabledMembers()
     {
-        var items = await this.GetGraphUsers("accountEnabled eq true and userType eq 'Member'");
+        var items = await GetGraphUsers("accountEnabled eq true and userType eq 'Member'");
 
         return items
         .Where(r => !string.IsNullOrEmpty(r.JobTitle?.Trim()))
@@ -162,7 +157,7 @@ public class MicrosoftService : IMicrosoftService
     }
 
 
-    public async Task<Microsoft.Graph.Event> AddCalenderEvent(string user, Microsoft.Graph.Event _event)
+    public async Task<Event> AddCalenderEvent(string user, Event _event)
     {
         return await _graphServiceClient.Users[user]
         .Calendar.Events
@@ -179,7 +174,7 @@ public class MicrosoftService : IMicrosoftService
         .Filter(filter)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<User>(items, 500, 500);
+        return await _graphServiceClient.PagedRequest(items, 500, 500);
     }
 
     public async Task<IEnumerable<Group>> GetGroups()
@@ -188,12 +183,12 @@ public class MicrosoftService : IMicrosoftService
         .Request()
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Group>(items, 500, 500);
+        return await _graphServiceClient.PagedRequest(items, 500, 500);
     }
 
     public async Task<User?> GetUserByEmail(string email)
     {
-        var items = await this.GetGraphUsers(string.Format("mail eq '{0}'", email));
+        var items = await GetGraphUsers(string.Format("mail eq '{0}'", email));
 
         return items.FirstOrDefault();
     }
@@ -315,12 +310,12 @@ public class MicrosoftService : IMicrosoftService
             Role = CalendarRoleType.Write
         };
 
-        await this._graphServiceClient.Users[addPermissionToUser].Calendar.CalendarPermissions.Request().AddAsync(newPermission);
+        await _graphServiceClient.Users[addPermissionToUser].Calendar.CalendarPermissions.Request().AddAsync(newPermission);
     }
 
     public async Task<IEnumerable<SubscribedSku>> GetLicenses()
     {
-        var items = await this._graphServiceClient.SubscribedSkus
+        var items = await _graphServiceClient.SubscribedSkus
               .Request()
               .GetAsync();
 
@@ -329,113 +324,113 @@ public class MicrosoftService : IMicrosoftService
 
     public async Task<IEnumerable<Device>> GetDevices()
     {
-        var items = await this._graphServiceClient.Devices
+        var items = await _graphServiceClient.Devices
         .Request()
         .Top(100)
         .Expand("registeredOwners")
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.Device>(items, 100, 500);
+        return await _graphServiceClient.PagedRequest(items, 100, 500);
     }
 
     public async Task<IEnumerable<ManagedDevice>> GetManagedDevices()
     {
-        var items = await this._graphServiceClient.DeviceManagement.ManagedDevices
+        var items = await _graphServiceClient.DeviceManagement.ManagedDevices
        .Request()
        .Top(300)
        .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<ManagedDevice>(items, 200, 500);
+        return await _graphServiceClient.PagedRequest(items, 200, 500);
     }
 
     public async Task<IEnumerable<SecureScore>> GetSecureScores()
     {
-        var iterator = await this._graphServiceClient.Security.SecureScores.Request()
+        var iterator = await _graphServiceClient.Security.SecureScores.Request()
         .Top(100)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.SecureScore>(iterator);
+        return await _graphServiceClient.PagedRequest(iterator);
     }
 
-    public async Task<IEnumerable<Microsoft.Graph.UserExperienceAnalyticsBatteryHealthDevicePerformance>> GetModelScores()
+    public async Task<IEnumerable<UserExperienceAnalyticsBatteryHealthDevicePerformance>> GetModelScores()
     {
         var iterator = await this._graphServiceClient.DeviceManagement.UserExperienceAnalyticsBatteryHealthDevicePerformance.Request()
         .Top(100)
         .GetAsync();
 
-        var allItems = await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsBatteryHealthDevicePerformance>(iterator);
+        var allItems = await _graphServiceClient.PagedRequest<UserExperienceAnalyticsBatteryHealthDevicePerformance>(iterator);
 
         return allItems;
     }
 
     public async Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance()
     {
-        var iterator = await this._graphServiceClient.DeviceManagement.UserExperienceAnalyticsDevicePerformance.Request()
+        var iterator = await _graphServiceClient.DeviceManagement.UserExperienceAnalyticsDevicePerformance.Request()
         .Top(100)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsDevicePerformance>(iterator);
+        return await _graphServiceClient.PagedRequest(iterator);
 
     }
 
     public async Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance()
     {
-        var iterator = await this._graphServiceClient.DeviceManagement.UserExperienceAnalyticsAppHealthApplicationPerformance.Request()
+        var iterator = await _graphServiceClient.DeviceManagement.UserExperienceAnalyticsAppHealthApplicationPerformance.Request()
         .Top(100)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsAppHealthApplicationPerformance>(iterator);
+        return await _graphServiceClient.PagedRequest(iterator);
 
     }
 
 
-    public async Task<IEnumerable<Microsoft.Graph.UserExperienceAnalyticsAppHealthOSVersionPerformance>> GetAppHealthOSVersionPerformance()
+    public async Task<IEnumerable<UserExperienceAnalyticsAppHealthOSVersionPerformance>> GetAppHealthOSVersionPerformance()
     {
-        var iterator = await this._graphServiceClient.DeviceManagement.UserExperienceAnalyticsAppHealthOSVersionPerformance.Request()
+        var iterator = await _graphServiceClient.DeviceManagement.UserExperienceAnalyticsAppHealthOSVersionPerformance.Request()
         .Top(100)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.UserExperienceAnalyticsAppHealthOSVersionPerformance>(iterator);
+        return await _graphServiceClient.PagedRequest(iterator);
     }
 
     public async Task<IEnumerable<Alert>> GetSecurityAlerts()
     {
-        var items = await this._graphServiceClient.Security.Alerts
+        var items = await _graphServiceClient.Security.Alerts
        .Request()
        .Top(100)
        .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.Alert>(items, 100);
+        return await _graphServiceClient.PagedRequest(items, 100);
     }
 
     public async Task<IEnumerable<UserRegistrationDetails>> GetUserRegistrationDetails()
     {
-        var iterator = await this._graphServiceClient.Reports.AuthenticationMethods.UserRegistrationDetails.Request()
+        var iterator = await _graphServiceClient.Reports.AuthenticationMethods.UserRegistrationDetails.Request()
         .Top(999)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<Microsoft.Graph.UserRegistrationDetails>(iterator);
+        return await _graphServiceClient.PagedRequest(iterator);
     }
 
     public async Task<IEnumerable<SignIn>> GetSignInsByUser(string userId)
     {
 
-        return await this._graphServiceClient.AuditLogs.SignIns.Request()
+        return await _graphServiceClient.AuditLogs.SignIns.Request()
         .Filter(string.Format("userId eq '{0}'", userId))
         .Top(999)
         .GetAsync();
     }
 
-    public async Task<IEnumerable<SignIn>> GetSignIns(int days = 4, int pageSize = 999, int delay = 500)
+    public async Task<IEnumerable<SignIn>> GetSignIns(int days = 2, int pageSize = 999, int delay = 500)
     {
         var filter = $"createdDateTime ge {DateTime.UtcNow.AddDays(-days).Date:yyyy-MM-ddTHH:mm:ssZ}";
 
-        var iterator = await this._graphServiceClient.AuditLogs.SignIns.Request()
+        var iterator = await _graphServiceClient.AuditLogs.SignIns.Request()
         .Filter(filter)
         .Top(pageSize)
         .GetAsync();
 
-        return await _graphServiceClient.PagedRequest<SignIn>(iterator, pageSize, delay);
+        return await _graphServiceClient.PagedRequest(iterator, pageSize, delay);
     }
 
 

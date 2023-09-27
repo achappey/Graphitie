@@ -7,47 +7,47 @@ public class MicrosoftProfile : AutoMapper.Profile
 
     public MicrosoftProfile()
     {
-        CreateMap<User, Graphitie.Models.User>();
+        CreateMap<User, Models.User>();
         
-        CreateMap<User, Graphitie.Models.Employee>();        
+        CreateMap<User, Models.Employee>();        
         
-        CreateMap<SignIn, Graphitie.Models.SignIn>();
-        CreateMap<Group, Graphitie.Models.Group>();
-        CreateMap<SignInLocation, Graphitie.Models.SignInLocation>();
-        CreateMap<SignInStatus, Graphitie.Models.SignInStatus>();
-        CreateMap<UserRegistrationDetails, Graphitie.Models.UserRegistrationDetails>();
+        CreateMap<SignIn, Models.SignIn>();
+        CreateMap<Group, Models.Group>();
+        CreateMap<SignInLocation, Models.SignInLocation>();
+        CreateMap<SignInStatus, Models.SignInStatus>();
+        CreateMap<UserRegistrationDetails, Models.UserRegistrationDetails>();
 
-        CreateMap<Graphitie.Models.CalendarEvent, Event>();
-        CreateMap<Graphitie.Models.EventAttendee, Attendee>();
-        CreateMap<Graphitie.Models.EmailAddress, EmailAddress>();
-        CreateMap<Graphitie.Models.EventDateTime, DateTimeTimeZone>();
-        CreateMap<Graphitie.Models.ItemBody, ItemBody>();
-        CreateMap<Graphitie.Models.Mail, Message>();
-        CreateMap<Graphitie.Models.Recipient, Recipient>();
+        CreateMap<Models.CalendarEvent, Event>();
+        CreateMap<Models.EventAttendee, Attendee>();
+        CreateMap<Models.EmailAddress, EmailAddress>();
+        CreateMap<Models.EventDateTime, DateTimeTimeZone>();
+        CreateMap<Models.ItemBody, ItemBody>();
+        CreateMap<Models.Mail, Message>();
+        CreateMap<Models.Recipient, Recipient>();
 
-CreateMap<Message, Graphitie.Models.Mail>();
-CreateMap<Recipient, Graphitie.Models.Recipient>();
-        CreateMap<Event, Graphitie.Models.CalendarEvent>();
-        CreateMap<Attendee, Graphitie.Models.EventAttendee>();
-        CreateMap<EmailAddress, Graphitie.Models.EmailAddress>();
-        CreateMap<DateTimeTimeZone, Graphitie.Models.EventDateTime>();
-        CreateMap<ItemBody, Graphitie.Models.ItemBody>();
+        CreateMap<Message, Models.Mail>();
+        CreateMap<Recipient, Models.Recipient>();
+        CreateMap<Event, Models.CalendarEvent>();
+        CreateMap<Attendee, Models.EventAttendee>();
+        CreateMap<EmailAddress, Models.EmailAddress>();
+        CreateMap<DateTimeTimeZone, Models.EventDateTime>();
+        CreateMap<ItemBody, Models.ItemBody>();
 
-        CreateMap<SubscribedSku, Graphitie.Models.License>()
+        CreateMap<SubscribedSku, Models.License>()
         .ForMember(t => t.EnabledUnits, f => f.MapFrom(y => y.PrepaidUnits.Enabled));
 
         CreateMap<AssignedLicense,string>().ConvertUsing(y => y.SkuId.HasValue ? y.SkuId.ToString() : null);
 
         CreateMap<UserExperienceAnalyticsDevicePerformance, Graphitie.Models.DevicePerformance>();
 
-        CreateMap<Device, Graphitie.Models.Device>()
+        CreateMap<Device, Models.Device>()
         .ForMember(t => t.RegisteredOwner, f => f.MapFrom(g => g.RegisteredOwners.Select(z => z.Id).FirstOrDefault()));
 
-        CreateMap<SecureScore, Graphitie.Models.SecureScore>()
+        CreateMap<SecureScore, Models.SecureScore>()
           .ForMember(t => t.ComparativeScore, f => f.MapFrom(g => g.AverageComparativeScores.Select(z => z.AverageScore).Average()))
-          .ForMember(t => t.Score, f => f.MapFrom(g => (g.CurrentScore / g.MaxScore) * 100));
+          .ForMember(t => t.Score, f => f.MapFrom(g => g.CurrentScore / g.MaxScore * 100));
 
-        CreateMap<Alert, Graphitie.Models.SecurityAlert>()
+        CreateMap<Alert, Models.SecurityAlert>()
             .ForMember(t => t.Users, f => f.MapFrom(g => g.UserStates.Select(z => z.UserPrincipalName)));
 
 
