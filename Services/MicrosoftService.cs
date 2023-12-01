@@ -18,7 +18,7 @@ public interface IMicrosoftService
     public Task SendMail(string user, Message message);
     public Task<IEnumerable<SignIn>> GetSignIns(int days = 4, int pageSize = 999, int delay = 500);
     public Task SendEmail(string user, string from, string to, string subject, string html);
-public Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, string toDate, string from = null, string subject = null);
+    public Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, string toDate, string from = null, string subject = null);
     public Task AddGroupOwner(string siteId, string userId);
     public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
     public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();
@@ -33,6 +33,7 @@ public Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, stri
     public Task<IEnumerable<ListItem>> GetEvents(string siteId);
     public Task DeleteGroupOwner(string siteId, string userId);
     public Task DeleteGroupMember(string siteId, string userId);
+    public Task<string> GetSharePointUrlOfGroup(string groupId);
     public Task RenameGroup(string siteId, string name);
     public Task AddTab(string siteId, string name, string url);
 
@@ -177,6 +178,12 @@ public class MicrosoftService : IMicrosoftService
         return await _graphServiceClient.PagedRequest(items, 500, 500);
     }
 
+    public async Task<string> GetSharePointUrlOfGroup(string groupId)
+    {
+        var groupDrive = await _graphServiceClient.Groups[groupId].Sites["root"].Request().GetAsync();
+        return new Uri( groupDrive.WebUrl).AbsolutePath;
+    }
+
     public async Task<IEnumerable<Group>> GetGroups()
     {
         var items = await _graphServiceClient.Groups
@@ -254,7 +261,7 @@ public class MicrosoftService : IMicrosoftService
                     Address = from
                 }
             },
-            
+
             ToRecipients = new List<Recipient>()
             {
                 new Microsoft.Graph.Recipient

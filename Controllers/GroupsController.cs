@@ -27,4 +27,11 @@ public class GroupsController : ControllerBase
         return await _graphitieService.GetGroups();
     }
 
+    [HttpGet("{id}", Name = "GetSharePointUrl")]
+    [EnableQuery]
+    public async Task<string> GetUrl(string id)
+    {
+        return await _graphitieService.GetSharePointUrlOfGroup(id);
+    }
+
 }

@@ -19,6 +19,7 @@ public interface IGraphitieService
     public Task DeleteMember(string siteId, string userId);
     public Task RenameGroup(string siteId, string name);
     public Task AddTab(string siteId, string name, string url);
+     Task<string> GetSharePointUrlOfGroup(string groupId);
 }
 
 public class GraphitieService : IGraphitieService
@@ -106,6 +107,11 @@ public class GraphitieService : IGraphitieService
         return items.Select(_mapper.Map<User>);
     }
 
+
+    public Task<string> GetSharePointUrlOfGroup(string groupId)
+    {
+        return _microsoftService.GetSharePointUrlOfGroup(groupId);
+    }
 
     public async Task<IEnumerable<User>> GetUsers()
     {
