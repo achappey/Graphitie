@@ -7,17 +7,11 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class GroupMembersController : ControllerBase
+public class GroupMembersController(ILogger<GroupMembersController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<GroupMembersController> _logger;
+    private readonly ILogger<GroupMembersController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public GroupMembersController(ILogger<GroupMembersController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpDelete(Name = "DeleteMember")]
     public async Task DeleteMember(string groupId, string userId)

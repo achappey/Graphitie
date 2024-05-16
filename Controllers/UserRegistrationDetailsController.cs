@@ -9,17 +9,11 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class UserRegistrationDetailsController : ControllerBase
+public class UserRegistrationDetailsController(ILogger<UserRegistrationDetailsController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<UserRegistrationDetailsController> _logger;
+    private readonly ILogger<UserRegistrationDetailsController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public UserRegistrationDetailsController(ILogger<UserRegistrationDetailsController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetUserRegistrationDetails")]
     [EnableQuery]

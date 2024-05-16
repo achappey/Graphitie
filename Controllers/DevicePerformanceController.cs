@@ -10,17 +10,11 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class DevicePerformanceController : ControllerBase
+public class DevicePerformanceController(ILogger<DevicePerformanceController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<DevicePerformanceController> _logger;
+    private readonly ILogger<DevicePerformanceController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public DevicePerformanceController(ILogger<DevicePerformanceController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetDevicePerformance")]
     [EnableQuery]

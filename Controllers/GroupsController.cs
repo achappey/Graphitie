@@ -8,17 +8,11 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class GroupsController : ControllerBase
+public class GroupsController(ILogger<GroupsController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<GroupsController> _logger;
+    private readonly ILogger<GroupsController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public GroupsController(ILogger<GroupsController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetGroups")]
     [EnableQuery]

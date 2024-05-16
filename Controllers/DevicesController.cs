@@ -9,17 +9,11 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class DevicesController : ControllerBase
+public class DevicesController(ILogger<DevicesController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<DevicesController> _logger;
+    private readonly ILogger<DevicesController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public DevicesController(ILogger<DevicesController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetDevices")]
     [EnableQuery]

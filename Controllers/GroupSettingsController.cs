@@ -5,17 +5,11 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class GroupSettingsController : ControllerBase
+public class GroupSettingsController(ILogger<GroupSettingsController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<GroupSettingsController> _logger;
+    private readonly ILogger<GroupSettingsController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public GroupSettingsController(ILogger<GroupSettingsController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpPost(Name = "RenameGroup")]
     public async Task RenameGroup(string groupId, string name)

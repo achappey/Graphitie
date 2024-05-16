@@ -9,17 +9,11 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class SignInsController : ControllerBase
+public class SignInsController(ILogger<SignInsController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<SignInsController> _logger;
+    private readonly ILogger<SignInsController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public SignInsController(ILogger<SignInsController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetSignIns")]
     [Produces("application/json")] 

@@ -8,17 +8,11 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class UsersController : ControllerBase
+public class UsersController(ILogger<UsersController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<UsersController> _logger;
+    private readonly ILogger<UsersController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public UsersController(ILogger<UsersController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetUsers")]
     [Produces("application/json")] 

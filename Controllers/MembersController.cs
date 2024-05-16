@@ -7,17 +7,11 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class MembersController : ControllerBase
+public class MembersController(ILogger<MembersController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<MembersController> _logger;
+    private readonly ILogger<MembersController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public MembersController(ILogger<MembersController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetMembers")]
     [Produces("application/json")] 

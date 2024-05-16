@@ -18,7 +18,7 @@ public interface IMicrosoftService
     public Task SendMail(string user, Message message);
     public Task<IEnumerable<SignIn>> GetSignIns(int days = 4, int pageSize = 999, int delay = 500);
     public Task SendEmail(string user, string from, string to, string subject, string html);
-    public Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, string toDate, string from = null, string subject = null);
+    public Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, string toDate, string? from = null, string? subject = null);
     public Task AddGroupOwner(string siteId, string userId);
     public Task<IEnumerable<UserExperienceAnalyticsDevicePerformance>> GetDevicePerformance();
     public Task<IEnumerable<UserExperienceAnalyticsAppHealthApplicationPerformance>> GetDeviceStartupPerformance();
@@ -39,14 +39,9 @@ public interface IMicrosoftService
 
 }
 
-public class MicrosoftService : IMicrosoftService
+public class MicrosoftService(GraphServiceClient graphServiceClient) : IMicrosoftService
 {
-    private readonly Microsoft.Graph.GraphServiceClient _graphServiceClient;
-
-    public MicrosoftService(Microsoft.Graph.GraphServiceClient graphServiceClient)
-    {
-        _graphServiceClient = graphServiceClient;
-    }
+    private readonly GraphServiceClient _graphServiceClient = graphServiceClient;
 
     public async Task AddTab(string siteId, string name, string url)
     {
@@ -264,8 +259,7 @@ public class MicrosoftService : IMicrosoftService
 
             ToRecipients = new List<Recipient>()
             {
-                new Microsoft.Graph.Recipient
-                {
+                new() {
                     EmailAddress = new EmailAddress
                     {
                         Address = to
@@ -285,7 +279,7 @@ public class MicrosoftService : IMicrosoftService
         .PostAsync();
     }
 
-    public async Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, string toDate, string from = null, string subject = null)
+    public async Task<IEnumerable<Message>> SearchEmail(string user, string fromDate, string toDate, string? from = null, string? subject = null)
     {
         string filter = $"receivedDateTime ge {fromDate} and receivedDateTime le {toDate}";
 
@@ -310,7 +304,7 @@ public class MicrosoftService : IMicrosoftService
 
     public async Task AddCalendarPermisson(string addPermissionToUser, string userPermission)
     {
-        CalendarPermission newPermission = new CalendarPermission
+        CalendarPermission newPermission = new()
         {
             EmailAddress = new EmailAddress { Address = userPermission },
             IsInsideOrganization = true,

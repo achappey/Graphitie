@@ -7,17 +7,11 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class CalendarController : ControllerBase
+public class CalendarController(ILogger<CalendarController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<CalendarController> _logger;
+    private readonly ILogger<CalendarController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public CalendarController(ILogger<CalendarController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "AddCalendarDelegate")]  
     public async Task AddCalendarDelegate(string userCalendar, string userDelegate)

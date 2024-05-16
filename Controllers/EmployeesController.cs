@@ -7,17 +7,11 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class EmployeesController : ControllerBase
+public class EmployeesController(ILogger<EmployeesController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<EmployeesController> _logger;
+    private readonly ILogger<EmployeesController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public EmployeesController(ILogger<EmployeesController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetEmployees")]
     [EnableQuery]

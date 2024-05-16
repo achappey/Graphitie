@@ -10,17 +10,11 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class SecureScoresController : ControllerBase
+public class SecureScoresController(ILogger<SecureScoresController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<SecureScoresController> _logger;
+    private readonly ILogger<SecureScoresController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public SecureScoresController(ILogger<SecureScoresController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetSecureScores")]
     [Produces(typeof(IEnumerable<SecureScore>))]

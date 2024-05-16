@@ -8,17 +8,11 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class LicensesController : ControllerBase
+public class LicensesController(ILogger<LicensesController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<LicensesController> _logger;
+    private readonly ILogger<LicensesController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public LicensesController(ILogger<LicensesController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetLicences")]
     [Produces("application/json")] 

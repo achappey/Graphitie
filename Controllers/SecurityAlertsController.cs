@@ -9,17 +9,11 @@ namespace Graphitie.Controllers.Microsoft;
 [ApiController]
 [Route("[controller]")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class SecurityAlertsController : ControllerBase
+public class SecurityAlertsController(ILogger<SecurityAlertsController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<SecurityAlertsController> _logger;
+    private readonly ILogger<SecurityAlertsController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public SecurityAlertsController(ILogger<SecurityAlertsController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpGet(Name = "GetSecurityAlerts")]
     [Produces("application/json")] 

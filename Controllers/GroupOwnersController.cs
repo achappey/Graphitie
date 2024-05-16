@@ -5,17 +5,11 @@ namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class GroupOwnersController : ControllerBase
+public class GroupOwnersController(ILogger<GroupOwnersController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<GroupOwnersController> _logger;
+    private readonly ILogger<GroupOwnersController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public GroupOwnersController(ILogger<GroupOwnersController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpPost(Name = "AddOwner")]
     public async Task AddOwner(string groupId, string userId)

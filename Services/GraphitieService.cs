@@ -15,64 +15,51 @@ public interface IGraphitieService
     public Task SendEmail(string user, string sender, string recipient, string subject, string html);
     public Task<IEnumerable<DevicePerformance>> GetDevicePerformance();
     public Task<int> CopyMemberContacts(string userId, string folderName, string? birthdaySiteId = null);
-    public Task AddContacts(string userId, string folderName);
+    public void AddContacts(string userId, string folderName);
     public Task DeleteMember(string siteId, string userId);
     public Task RenameGroup(string siteId, string name);
     public Task AddTab(string siteId, string name, string url);
-     Task<string> GetSharePointUrlOfGroup(string groupId);
+    Task<string> GetSharePointUrlOfGroup(string groupId);
 }
 
-public class GraphitieService : IGraphitieService
+public class GraphitieService(IMapper mapper,
+    MicrosoftService microsoftService) : IGraphitieService
 {
-    private readonly Microsoft.Graph.GraphServiceClient _graphServiceClient;
-    private readonly KeyVaultService _keyVaultService;
-    private readonly IMicrosoftService _microsoftService;
-    private readonly IMapper _mapper;
+    private readonly IMicrosoftService _microsoftService = microsoftService;
+    private readonly IMapper _mapper = mapper;
 
-    public GraphitieService(Microsoft.Graph.GraphServiceClient graphServiceClient,
-    KeyVaultService keyVaultService,
-    IMapper mapper,
-    MicrosoftService microsoftService)
+    public Task SendEmail(string user, string sender, string recipient, string subject, string html)
     {
-        _graphServiceClient = graphServiceClient;
-        _keyVaultService = keyVaultService;
-        _microsoftService = microsoftService;
-        _mapper = mapper;
+        return _microsoftService.SendEmail(user, sender, recipient, subject, html);
     }
 
-
-    public async Task SendEmail(string user, string sender, string recipient, string subject, string html)
+    public Task SendMail(string user, Mail mail)
     {
-        await _microsoftService.SendEmail(user, sender, recipient, subject, html);
+        return _microsoftService.SendMail(user, _mapper.Map<Microsoft.Graph.Message>(mail));
     }
 
-    public async Task SendMail(string user, Mail mail)
+    public Task AddTab(string siteId, string name, string url)
     {
-        await _microsoftService.SendMail(user, _mapper.Map<Microsoft.Graph.Message>(mail));
+        return _microsoftService.AddTab(siteId, name, url);
     }
 
-    public async Task AddTab(string siteId, string name, string url)
+    public Task RenameGroup(string siteId, string name)
     {
-        await _microsoftService.AddTab(siteId, name, url);
+        return _microsoftService.RenameGroup(siteId, name);
     }
 
-    public async Task RenameGroup(string siteId, string name)
+    public Task AddOwner(string siteId, string userId)
     {
-        await _microsoftService.RenameGroup(siteId, name);
+        return _microsoftService.AddGroupOwner(siteId, userId);
     }
 
-    public async Task AddOwner(string siteId, string userId)
+    public Task DeleteMember(string siteId, string userId)
     {
-        await _microsoftService.AddGroupOwner(siteId, userId);
+        return _microsoftService.DeleteGroupMember(siteId, userId);
     }
-
-    public async Task DeleteMember(string siteId, string userId)
+    public Task DeleteOwner(string siteId, string userId)
     {
-        await _microsoftService.DeleteGroupMember(siteId, userId);
-    }
-    public async Task DeleteOwner(string siteId, string userId)
-    {
-        await _microsoftService.DeleteGroupOwner(siteId, userId);
+        return _microsoftService.DeleteGroupOwner(siteId, userId);
     }
 
     public async Task<IEnumerable<Device>> GetDevices()
@@ -136,7 +123,7 @@ public class GraphitieService : IGraphitieService
             return 0;
         }
 
-        Dictionary<string, DateTimeOffset> birthdays = new Dictionary<string, DateTimeOffset>();
+        Dictionary<string, DateTimeOffset> birthdays = new();
 
         if (!string.IsNullOrEmpty(birthdaySiteId))
         {
@@ -163,7 +150,7 @@ public class GraphitieService : IGraphitieService
     }
 
 
-    public async Task AddContacts(string userId, string folderName)
+    public void AddContacts(string userId, string folderName)
     {
     }
 

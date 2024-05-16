@@ -16,7 +16,7 @@ var version = "v1";
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 var appConfig = builder.Configuration.Get<AppConfig>();
-var apiTitle = appConfig.NameSpace.Replace(".", " ");
+var apiTitle = appConfig!.NameSpace.Replace(".", " ");
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -37,7 +37,7 @@ builder.Services.AddAutoMapper(
 
 builder.Services.AddScoped<GraphitieService>();
 builder.Services.AddScoped<MicrosoftService>();
-builder.Services.AddSingleton<KeyVaultService>();
+//builder.Services.AddSingleton<KeyVaultService>();
 
 builder.Services.AddHttpClient();
 

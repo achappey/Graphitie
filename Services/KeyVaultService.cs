@@ -9,15 +9,10 @@ public interface IKeyVaultService
 
 }
 
-public class KeyVaultService : IKeyVaultService
+public class KeyVaultService(
+    SecretClient secretClient) : IKeyVaultService
 {
-    private readonly SecretClient _secretClient;
-    
-    public KeyVaultService(
-        SecretClient secretClient)
-    {
-        _secretClient = secretClient;
-    }
+    private readonly SecretClient _secretClient = secretClient;
 
     public async Task<KeyVaultSecret> GetSecret(string name)
     {

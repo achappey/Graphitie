@@ -36,9 +36,9 @@ public class MicrosoftProfile : AutoMapper.Profile
         CreateMap<SubscribedSku, Models.License>()
         .ForMember(t => t.EnabledUnits, f => f.MapFrom(y => y.PrepaidUnits.Enabled));
 
-        CreateMap<AssignedLicense,string>().ConvertUsing(y => y.SkuId.HasValue ? y.SkuId.ToString() : null);
+        CreateMap<AssignedLicense,string?>().ConvertUsing(y => y.SkuId.HasValue ? y.SkuId.ToString() : null);
 
-        CreateMap<UserExperienceAnalyticsDevicePerformance, Graphitie.Models.DevicePerformance>();
+        CreateMap<UserExperienceAnalyticsDevicePerformance, Models.DevicePerformance>();
 
         CreateMap<Device, Models.Device>()
         .ForMember(t => t.RegisteredOwner, f => f.MapFrom(g => g.RegisteredOwners.Select(z => z.Id).FirstOrDefault()));

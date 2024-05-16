@@ -1,22 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Graphitie.Services;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Graphitie.Controllers.Microsoft;
 
 [ApiController]
 [Route("[controller]")]
-public class TeamsTabController : ControllerBase
+public class TeamsTabController(ILogger<TeamsTabController> logger, GraphitieService graphitieService) : ControllerBase
 {
-    private readonly ILogger<TeamsTabController> _logger;
+    private readonly ILogger<TeamsTabController> _logger = logger;
 
-    private readonly GraphitieService _graphitieService;
-
-    public TeamsTabController(ILogger<TeamsTabController> logger, GraphitieService graphitieService)
-    {
-        _logger = logger;
-        _graphitieService = graphitieService;
-    }
+    private readonly GraphitieService _graphitieService = graphitieService;
 
     [HttpPost(Name = "AddTab")]
     public async Task AddTab(string groupId, string name, string url)

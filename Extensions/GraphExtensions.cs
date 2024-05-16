@@ -65,7 +65,7 @@ public static class GraphExtensions
         // Create a list of QueryOption objects for expanding specific fields
         var queryOptions = new List<Microsoft.Graph.QueryOption>
     {
-        new Microsoft.Graph.QueryOption("expand", "fields(select=EventDate,Category,ParticipantsPicker)")
+        new("expand", "fields(select=EventDate,Category,ParticipantsPicker)")
     };
 
         // Fetch and return the list items with the specified query options
@@ -184,7 +184,7 @@ public static class GraphExtensions
        string folderId,
        string extensionName)
     {
-        List<QueryOption> options = new List<QueryOption>
+        List<QueryOption> options = new()
         {
                 new QueryOption("$top", "999"),
                 new QueryOption("$expand", string.Format("Extensions($filter=Id eq '{0}')", extensionName)),
@@ -212,8 +212,8 @@ public static class GraphExtensions
 
     public static async Task<IEnumerable<ContactFolder>> SearchContactFolders(this GraphServiceClient client, string userId, string title)
     {
-        List<QueryOption> options = new List<QueryOption>
-            {
+        List<QueryOption> options = new()
+        {
                     new QueryOption("$top", "999"),
                     new QueryOption("$filter", string.Format("displayName eq '{0}'", title)),
             };
@@ -243,7 +243,7 @@ public static class GraphExtensions
      int pauseAfter = 200,
      int delay = 1500)
     {
-        List<T> result = new List<T>();
+        List<T> result = new();
 
         // Counter to keep track of the number of items processed
         int count = 0;
