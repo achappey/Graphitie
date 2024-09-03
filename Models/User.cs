@@ -18,5 +18,5 @@ public class User
     public bool AccountEnabled { get; set; }
     public DateTimeOffset? CreatedDateTime { get; set; }
     public IEnumerable<string> AssignedLicenses { get; set; } = null!;
-
+    public DateTimeOffset? EmployeeHireDate { get; set; }
 }
