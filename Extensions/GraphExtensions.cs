@@ -184,11 +184,11 @@ public static class GraphExtensions
        string folderId,
        string extensionName)
     {
-        List<QueryOption> options = new()
-        {
+        List<QueryOption> options =
+        [
                 new QueryOption("$top", "999"),
                 new QueryOption("$expand", string.Format("Extensions($filter=Id eq '{0}')", extensionName)),
-        };
+        ];
 
         return await client.Users[userId]
         .ContactFolders[folderId]
@@ -212,11 +212,11 @@ public static class GraphExtensions
 
     public static async Task<IEnumerable<ContactFolder>> SearchContactFolders(this GraphServiceClient client, string userId, string title)
     {
-        List<QueryOption> options = new()
-        {
+        List<QueryOption> options =
+        [
                     new QueryOption("$top", "999"),
                     new QueryOption("$filter", string.Format("displayName eq '{0}'", title)),
-            };
+            ];
 
         return await client.Users[userId]
         .ContactFolders
@@ -243,7 +243,7 @@ public static class GraphExtensions
      int pauseAfter = 200,
      int delay = 1500)
     {
-        List<T> result = new();
+        List<T> result = [];
 
         // Counter to keep track of the number of items processed
         int count = 0;

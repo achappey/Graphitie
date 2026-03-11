@@ -123,7 +123,7 @@ public class GraphitieService(IMapper mapper,
             return 0;
         }
 
-        Dictionary<string, DateTimeOffset> birthdays = new();
+        Dictionary<string, DateTimeOffset> birthdays = [];
 
         if (!string.IsNullOrEmpty(birthdaySiteId))
         {
@@ -166,7 +166,6 @@ public class GraphitieService(IMapper mapper,
         var items = await _microsoftService.GetDevicePerformance();
         return items.Select(_mapper.Map<DevicePerformance>);
     }
-
 
     public async Task<IEnumerable<SecureScore>> GetSecureScores()
     {

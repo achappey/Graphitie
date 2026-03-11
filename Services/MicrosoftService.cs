@@ -86,21 +86,17 @@ public class MicrosoftService(GraphServiceClient graphServiceClient) : IMicrosof
         }
     }
 
-
-    public async Task RenameGroup(string siteId, string name)
+    public async Task RenameGroup(string groupId, string name)
     {
-        var group = await this._graphServiceClient.Groups[siteId]
-        .Request()
-        .GetAsync();
+        var update = new Group
+        {
+            DisplayName = name
+        };
 
-        group.DisplayName = name;
-
-        await _graphServiceClient.Groups[siteId]
+        await _graphServiceClient.Groups[groupId]
             .Request()
-            .UpdateAsync(group);
-
+            .UpdateAsync(update);
     }
-
 
     public async Task<ContactFolder> EnsureContactFolder(string userId, string name)
     {
@@ -176,7 +172,7 @@ public class MicrosoftService(GraphServiceClient graphServiceClient) : IMicrosof
     public async Task<string> GetSharePointUrlOfGroup(string groupId)
     {
         var groupDrive = await _graphServiceClient.Groups[groupId].Sites["root"].Request().GetAsync();
-        return new Uri( groupDrive.WebUrl).AbsolutePath;
+        return new Uri(groupDrive.WebUrl).AbsolutePath;
     }
 
     public async Task<IEnumerable<Group>> GetGroups()
